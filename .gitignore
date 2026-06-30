@@ -1,0 +1,27 @@
+# Rust
+target/
+Cargo.lock
+
+# Checkpoint files
+*.checkpoint
+checkpoints/
+
+# Log files
+*.log
+
+# Environment
+.env
+
+# CUDA artifacts
+*.ptx
+*.fatbin
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

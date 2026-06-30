@@ -1,0 +1,56 @@
+[package]
+name = "bitcoin-kangaroo-solver"
+version = "1.0.0"
+edition = "2021"
+description = "Pollard's Kangaroo algorithm based Bitcoin puzzle solver with CPU + GPU support"
+authors = ["bitcoin-kangaroo-solver"]
+
+[features]
+default = ["cpu"]
+cpu = []
+gpu = ["cust", "libc"]
+
+[dependencies]
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# Elliptic curve (secp256k1)
+k256 = { version = "0.13", features = ["arithmetic", "bits"] }
+
+# Cryptography
+sha2 = "0.10"
+ripemd = "0.1"
+
+# Random number generation
+rand = "0.8"
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+bincode = "1"
+
+reqwest = { version = "0.12", features = ["blocking"] }
+
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+rayon = "1"
+
+# Signal handling for graceful shutdown
+ctrlc = { version = "3", features = ["termination"] }
+
+hex = "0.4"
+bs58 = "0.5"
+num_cpus = "1"
+
+# CUDA (optional, requires CUDA toolkit)
+cust = { version = "0.3", optional = true }
+libc = { version = "0.2", optional = true }
+
+[build-dependencies]
+cc = { version = "1", optional = true }
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
