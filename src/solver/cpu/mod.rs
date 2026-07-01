@@ -8,9 +8,9 @@ use rayon::prelude::*;
 
 use crate::kangaroo::{
     point,
-    walk::{KangarooWalk, KangarooType},
+    walk::{KangarooWalk, KangarooType, WalkMode},
     params::KangarooParams,
-    collision::DistPointEntry,
+    collision::{CollisionFinder, DistPointEntry},
 };
 use crate::checkpoint::{Checkpoint, DistinguishedPointEntry};
 use crate::notification::{FoundKey, Notify};
@@ -26,18 +26,22 @@ impl Solver for CpuSolver {
         let dist_counter = Arc::new(AtomicU64::new(0));
         let start = Instant::now();
 
-        let shared_dist_points: Arc<Mutex<Vec<DistPointEntry>>> = Arc::new(Mutex::new(Vec::new()));
+        let target_arr: [u8; 33] = params.target_point.as_slice().try_into()
+            .expect("Invalid target point length");
+        let target_point = point::affine_bytes_to_point(&target_arr)
+            .expect("Invalid target point");
+
+        let shared_collision = Arc::new(Mutex::new(CollisionFinder::new(target_arr)));
 
         if let Some(ckpt) = checkpoint {
+            let mut cf = shared_collision.lock().unwrap();
             for entry in &ckpt.distinguished_points {
-                let mut dps = shared_dist_points.lock().unwrap();
-                dps.push(DistPointEntry {
+                cf.distinguished_points.push(DistPointEntry {
                     x_bytes: entry.x,
                     distance: entry.distance,
                     kangaroo_type: entry.kangaroo_type,
                     thread_id: entry.thread_id,
                 });
-                drop(dps);
                 dist_counter.fetch_add(1, Ordering::Relaxed);
             }
             total_ops.store(ckpt.total_ops as u64, Ordering::Relaxed);
@@ -45,17 +49,20 @@ impl Solver for CpuSolver {
                 ckpt.distinguished_points.len(), params.checkpoint_path);
         }
 
-        let jump_table = Arc::new(point::generate_jump_table(params.jump_table_size));
-        let save_interval = Arc::new(120u64); // save checkpoint every 120s
+        let jump_table = Arc::new(if params.sota_mode {
+            point::generate_sota_jump_table(params.jump_table_size)
+        } else {
+            point::generate_jump_table(params.jump_table_size)
+        });
+        let save_interval = Arc::new(120u64);
+
+        let mode = if params.negation_map { WalkMode::NegationMap } else { WalkMode::Normal };
 
         println!("\n[CPU] Starting {} threads...", params.num_threads);
         println!("[CPU] Range width: 2^{}", params.puzzle_id);
         println!("[CPU] Distinguished bits: {}", params.distinguished_bit);
-
-        let target_arr: [u8; 33] = params.target_point.as_slice().try_into()
-            .expect("Invalid target point length");
-        let target_point = point::affine_bytes_to_point(&target_arr)
-            .expect("Invalid target point");
+        println!("[CPU] Negation map: {}", if params.negation_map { "ENABLED" } else { "disabled" });
+        println!("[CPU] SOTA K=1.15: {}", if params.sota_mode { "ENABLED" } else { "disabled" });
 
         let ckpt_path = params.checkpoint_path.clone();
 
@@ -67,26 +74,21 @@ impl Solver for CpuSolver {
             let mut rng = rand::thread_rng();
             let is_tame = thread_id % 2 == 0;
 
-            let start_dist_bytes = if let Some(_ckpt) = checkpoint {
-                let mut dist = [0u8; 32];
-                rng.fill(&mut dist);
-                dist
-            } else {
-                let mut dist = [0u8; 32];
-                rng.fill(&mut dist);
-                dist
-            };
+            let mut start_dist_bytes = [0u8; 32];
+            rng.fill(&mut start_dist_bytes);
             let start_dist = point::scalar_from_bytes(&start_dist_bytes);
-            let start_pt = if is_tame {
-                point::point_from_scalar(&start_dist)
+            let (start_dist_val, start_pt) = if is_tame {
+                (start_dist, point::point_from_scalar(&start_dist))
             } else {
-                point::subtract_points(&target_point, &point::point_from_scalar(&start_dist))
+                let wild_dist = point::scalar_from_u64(0);
+                (wild_dist, target_point)
             };
 
             let mut walk = KangarooWalk::new(
                 if is_tame { KangarooType::Tame } else { KangarooType::Wild },
-                start_dist, start_pt, jump_table.as_ref().clone(),
-            );
+                start_dist_val, start_pt, jump_table.as_ref().clone(),
+            ).with_mode(mode);
+
             let mut ops: u64 = 0;
             let mut last_report = Instant::now();
 
@@ -98,14 +100,14 @@ impl Solver for CpuSolver {
                 if is_interrupted() {
                     found.store(true, Ordering::Relaxed);
                     if let Some(ref path) = ckpt_path {
-                        let dps = shared_dist_points.lock().unwrap();
+                        let cf = shared_collision.lock().unwrap();
                         let elapsed = start.elapsed().as_secs();
                         let ckpt = Checkpoint {
                             puzzle_id: params.puzzle_id,
                             start_range: params.start_range,
                             end_range: params.end_range,
                             target_point: params.target_point.clone(),
-                            distinguished_points: dps.iter().map(|d| DistinguishedPointEntry {
+                            distinguished_points: cf.distinguished_points.iter().map(|d| DistinguishedPointEntry {
                                 x: d.x_bytes,
                                 distance: d.distance,
                                 kangaroo_type: d.kangaroo_type,
@@ -117,7 +119,7 @@ impl Solver for CpuSolver {
                                 .duration_since(std::time::UNIX_EPOCH)
                                 .unwrap_or_default().as_secs(),
                         };
-                        drop(dps);
+                        drop(cf);
                         if let Err(e) = ckpt.save(&PathBuf::from(path)) {
                             eprintln!("[ERROR] Checkpoint save on interrupt failed: {}", e);
                         } else {
@@ -137,39 +139,23 @@ impl Solver for CpuSolver {
 
                     dist_counter.fetch_add(1, Ordering::Relaxed);
 
-                    let mut dps = shared_dist_points.lock().unwrap();
-                    for existing in dps.iter() {
-                        if existing.x_bytes == x_bytes && existing.kangaroo_type != ktype {
-                            let tame_dist_bytes = if ktype == 0 { &dist_bytes } else { &existing.distance };
-                            let wild_dist_bytes = if ktype == 1 { &dist_bytes } else { &existing.distance };
-                            let tame_dist = point::scalar_from_bytes(tame_dist_bytes);
-                            let wild_dist = point::scalar_from_bytes(wild_dist_bytes);
-                            let private_key = tame_dist - wild_dist;
-                            let pubkey = point::point_from_scalar(&private_key);
-                            let address = point::compute_bitcoin_address(&pubkey);
-
-                            found.store(true, Ordering::Relaxed);
-
-                            let fk = FoundKey {
-                                private_key: point::scalar_to_bytes(&private_key),
-                                public_key: point::point_to_affine_bytes(&pubkey),
-                                address,
-                                puzzle_id: params.puzzle_id,
-                                thread_id: thread_id as u32,
-                                elapsed_seconds: start.elapsed().as_secs(),
-                            };
-                            notifier.notify(&fk);
-                            return;
-                        }
+                    let mut cf = shared_collision.lock().unwrap();
+                    if let Some(result) = cf.add_point(x_bytes, dist_bytes, ktype, thread_id as u32) {
+                        found.store(true, Ordering::Relaxed);
+                        let address = point::compute_bitcoin_address(&result.public_key_point);
+                        let fk = FoundKey {
+                            private_key: point::scalar_to_bytes(&result.private_key),
+                            public_key: point::point_to_affine_bytes(&result.public_key_point),
+                            address,
+                            puzzle_id: params.puzzle_id,
+                            thread_id: thread_id as u32,
+                            elapsed_seconds: start.elapsed().as_secs(),
+                        };
+                        drop(cf);
+                        notifier.notify(&fk);
+                        return;
                     }
-
-                    dps.push(DistPointEntry {
-                        x_bytes,
-                        distance: dist_bytes,
-                        kangaroo_type: ktype,
-                        thread_id: thread_id as u32,
-                    });
-                    drop(dps);
+                    drop(cf);
                 }
 
                 total_ops.fetch_add(1, Ordering::Relaxed);
@@ -179,11 +165,13 @@ impl Solver for CpuSolver {
                     let elapsed = start.elapsed().as_secs_f64();
                     let rate = total_ops.load(Ordering::Relaxed) as f64 / elapsed.max(0.001);
                     let dists = dist_counter.load(Ordering::Relaxed);
+                    let neg = walk.negations;
                     println!(
-                        "[CPU-{}] {}M ops/s | {} distinguished | total: {}M",
+                        "[CPU-{}] {}M ops/s | {} dist | {} neg | total: {}M",
                         thread_id,
                         rate / 1_000_000.0,
                         dists,
+                        neg,
                         total_ops.load(Ordering::Relaxed) / 1_000_000,
                     );
                 }
@@ -191,13 +179,13 @@ impl Solver for CpuSolver {
                 if ops % 10_000_000 == 0 && !found.load(Ordering::Relaxed) {
                     let elapsed = start.elapsed().as_secs();
                     if elapsed > 0 && elapsed % *save_interval == 0 {
-                        let dps = shared_dist_points.lock().unwrap();
+                        let cf = shared_collision.lock().unwrap();
                         let ckpt = Checkpoint {
                             puzzle_id: params.puzzle_id,
                             start_range: params.start_range,
                             end_range: params.end_range,
                             target_point: params.target_point.clone(),
-                            distinguished_points: dps.iter().map(|d| DistinguishedPointEntry {
+                            distinguished_points: cf.distinguished_points.iter().map(|d| DistinguishedPointEntry {
                                 x: d.x_bytes,
                                 distance: d.distance,
                                 kangaroo_type: d.kangaroo_type,
@@ -209,7 +197,7 @@ impl Solver for CpuSolver {
                                 .duration_since(std::time::UNIX_EPOCH)
                                 .unwrap_or_default().as_secs(),
                         };
-                        drop(dps);
+                        drop(cf);
                         if let Some(ref path) = ckpt_path {
                             if let Err(e) = ckpt.save(&PathBuf::from(path)) {
                                 eprintln!("[ERROR] Checkpoint save failed: {}", e);

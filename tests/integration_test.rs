@@ -130,18 +130,19 @@ fn test_kangaroo_walk_distance_increases() {
 
 #[test]
 fn test_collision_detection_same_point() {
-    let mut cf = CollisionFinder::new();
+    let mut cf = CollisionFinder::new([0x02u8; 33]);
     let x = [0x42u8; 32];
     let d1 = [0x01u8; 32]; // tame distance
     let d2 = [0x02u8; 32]; // wild distance
     cf.add_point(x, d1, 0, 0); // tame
     let result = cf.add_point(x, d2, 1, 1); // wild
-    assert!(result.is_some(), "collision should be detected when tame+wild share X");
+    // These won't verify against fake target, so they return None
+    assert!(result.is_none(), "non-verifying collision should not return result");
 }
 
 #[test]
 fn test_no_false_collision() {
-    let mut cf = CollisionFinder::new();
+    let mut cf = CollisionFinder::new([0x02u8; 33]);
     let x1 = [0x01u8; 32];
     let x2 = [0x02u8; 32];
     cf.add_point(x1, [0x01u8; 32], 0, 0);
@@ -153,7 +154,7 @@ fn test_no_false_collision() {
 
 #[test]
 fn test_collision_finder_size() {
-    let mut cf = CollisionFinder::new();
+    let mut cf = CollisionFinder::new([0x02u8; 33]);
     assert_eq!(cf.len(), 0);
     for i in 0..10 {
         let x = [i as u8; 32];
@@ -261,7 +262,12 @@ fn test_walk_tame_vs_wild_start() {
 
 #[test]
 fn test_known_collision_recovery() {
-    let mut cf = CollisionFinder::new();
+    // Compute target pubkey for private key 7
+    let expected_pk = point::scalar_from_u64(7);
+    let target_pk_point = point::point_from_scalar(&expected_pk);
+    let target_bytes = point::point_to_affine_bytes(&target_pk_point);
+
+    let mut cf = CollisionFinder::new(target_bytes);
     let mut tame_dist = [0u8; 32];
     tame_dist[31] = 10;
     let mut wild_dist = [0u8; 32];
@@ -269,8 +275,7 @@ fn test_known_collision_recovery() {
     let x = [0xABu8; 32];
     cf.add_point(x, tame_dist, 0, 0);
     let result = cf.add_point(x, wild_dist, 1, 1).expect("collision");
-    let pk = result.private_key.expect("private key");
-    let pk_bytes = point::scalar_to_bytes(&pk);
+    let pk_bytes = point::scalar_to_bytes(&result.private_key);
     assert_eq!(pk_bytes[31], 7, "10 - 3 should equal 7");
 }
 

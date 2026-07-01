@@ -17,6 +17,8 @@ pub struct KangarooParams {
     pub use_gpu: bool,
     pub checkpoint_interval: u64,
     pub checkpoint_path: Option<String>,
+    pub negation_map: bool,
+    pub sota_mode: bool,
 }
 
 impl KangarooParams {
@@ -41,7 +43,19 @@ impl KangarooParams {
             use_gpu: false,
             checkpoint_interval,
             checkpoint_path,
+            negation_map: true,
+            sota_mode: true,
         }
+    }
+
+    pub fn with_negation_map(mut self, enabled: bool) -> Self {
+        self.negation_map = enabled;
+        self
+    }
+
+    pub fn with_sota_mode(mut self, enabled: bool) -> Self {
+        self.sota_mode = enabled;
+        self
     }
 
     pub fn range_width(&self) -> u128 {

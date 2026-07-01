@@ -5,5 +5,5 @@ pub mod distinguished;
 pub mod collision;
 
 pub use params::KangarooParams;
-pub use walk::{KangarooWalk, KangarooType};
+pub use walk::{KangarooWalk, KangarooType, WalkMode};
 pub use collision::CollisionFinder;

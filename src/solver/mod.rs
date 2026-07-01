@@ -3,6 +3,9 @@ pub mod cpu;
 #[cfg(feature = "gpu")]
 pub mod gpu;
 
+#[cfg(feature = "gpu-wgpu")]
+pub mod wgpu_solver;
+
 use crate::kangaroo::KangarooParams;
 use crate::checkpoint::Checkpoint;
 use crate::notification::Notify;

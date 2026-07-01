@@ -35,8 +35,8 @@ struct Args {
     #[arg(short, long, help = "Number of CPU threads (default: half of available cores)")]
     threads: Option<usize>,
 
-    #[arg(short = 'g', long, default_value_t = false, help = "Enable GPU acceleration (requires CUDA)")]
-    gpu: bool,
+    #[arg(short = 'g', long, help = "GPU backend: 'cuda' or 'wgpu'")]
+    gpu: Option<String>,
 
     #[arg(short = 'c', long, help = "Path to checkpoint file to resume from")]
     checkpoint: Option<PathBuf>,
@@ -55,6 +55,12 @@ struct Args {
 
     #[arg(long, help = "Log file path for found keys")]
     log_file: Option<PathBuf>,
+
+    #[arg(long, default_value_t = true, help = "Enable negation map (2x search speed)")]
+    negation_map: bool,
+
+    #[arg(long, default_value_t = true, help = "Use SOTA K=1.15 jump table")]
+    sota: bool,
 
     #[arg(long, short = 'l', action = clap::ArgAction::SetTrue, help = "List available puzzles")]
     list: bool,
@@ -117,7 +123,9 @@ fn main() {
         distinguished_bits,
         checkpoint_path.clone(),
         args.checkpoint_interval,
-    );
+    )
+    .with_negation_map(args.negation_map)
+    .with_sota_mode(args.sota);
 
     let maybe_checkpoint = checkpoint_path.as_ref().and_then(|path| {
         let pb = PathBuf::from(path);
@@ -156,9 +164,11 @@ fn main() {
     println!("  Target       : {}", target_address);
     println!("  Algorithm    : Pollard's Kangaroo (Distinguished Points)");
     println!("  Threads      : {} (CPU)", params.num_threads);
-    if args.gpu {
-        println!("  GPU          : ENABLED (CUDA)");
+    if args.gpu.is_some() {
+        println!("  GPU          : ENABLED ({})", args.gpu.as_deref().unwrap_or("cuda").to_uppercase());
     }
+    println!("  Negation Map : {}", if params.negation_map { "ON" } else { "OFF" });
+    println!("  SOTA K=1.15  : {}", if params.sota_mode { "ON" } else { "OFF" });
     println!("  Distinguished: {} bits", params.distinguished_bit);
     println!("  Checkpoint   : {}", match &params.checkpoint_path {
         Some(p) => format!("{} (every {}s)", p, params.checkpoint_interval),
@@ -168,16 +178,36 @@ fn main() {
 
     let start = Instant::now();
 
-    if args.gpu {
-        #[cfg(feature = "gpu")]
-        {
-            let solver = bitcoin_kangaroo_solver::solver::gpu::GpuSolver;
-            solver.run(&params, maybe_checkpoint.as_ref(), &notifier as &dyn Notify);
-        }
-        #[cfg(not(feature = "gpu"))]
-        {
-            eprintln!("[ERROR] GPU feature not enabled. Rebuild with: cargo build --release --features=gpu");
-            std::process::exit(1);
+    if let Some(ref gpu_backend) = args.gpu {
+        match gpu_backend.as_str() {
+            "cuda" => {
+                #[cfg(feature = "gpu")]
+                {
+                    let solver = bitcoin_kangaroo_solver::solver::gpu::GpuSolver;
+                    solver.run(&params, maybe_checkpoint.as_ref(), &notifier as &dyn Notify);
+                }
+                #[cfg(not(feature = "gpu"))]
+                {
+                    eprintln!("[ERROR] CUDA GPU feature not enabled. Rebuild with: cargo build --release --features=gpu");
+                    std::process::exit(1);
+                }
+            }
+            "wgpu" => {
+                #[cfg(feature = "gpu-wgpu")]
+                {
+                    let solver = bitcoin_kangaroo_solver::solver::wgpu_solver::WgpuSolver;
+                    solver.run(&params, maybe_checkpoint.as_ref(), &notifier as &dyn Notify);
+                }
+                #[cfg(not(feature = "gpu-wgpu"))]
+                {
+                    eprintln!("[ERROR] wgpu GPU feature not enabled. Rebuild with: cargo build --release --features=gpu-wgpu");
+                    std::process::exit(1);
+                }
+            }
+            other => {
+                eprintln!("[ERROR] Unknown GPU backend '{}'. Use 'cuda' or 'wgpu'.", other);
+                std::process::exit(1);
+            }
         }
     } else {
         let solver = CpuSolver;

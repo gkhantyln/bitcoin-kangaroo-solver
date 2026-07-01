@@ -107,3 +107,41 @@ pub fn hash_to_scalar(x: &[u8; 32], jump_table_len: usize) -> usize {
     let idx = u64::from_le_bytes(bytes[..8].try_into().unwrap()) as usize;
     idx % jump_table_len
 }
+
+pub fn is_y_high(point: &ProjectivePoint) -> bool {
+    let encoded = point.to_affine().to_encoded_point(false);
+    let bytes = encoded.as_bytes();
+    if bytes.len() <= 33 {
+        return false;
+    }
+    bytes[33] >= 0x80
+}
+
+pub fn negate_point_distance(point: &mut ProjectivePoint, distance: &mut Scalar) {
+    *point = -*point;
+    *distance = -*distance;
+}
+
+pub fn generate_sota_jump_table(num_jumps: usize) -> Vec<(Scalar, ProjectivePoint)> {
+    let mut table = Vec::with_capacity(num_jumps);
+    let mut rng = rand::thread_rng();
+    let mean: u64 = (1u64 << 8) * 115 / 100;
+    let scale: u64 = mean * 2;
+    for _ in 0..num_jumps {
+        let dist: u64 = rng.gen_range(1..=scale);
+        let scalar = scalar_from_u64(dist);
+        let point = point_from_scalar(&scalar);
+        table.push((scalar, point));
+    }
+    table
+}
+
+pub fn verify_private_key(candidate: &[u8; 32], target_pubkey: &[u8; 33]) -> bool {
+    let candidate_scalar = match Scalar::from_repr((*candidate).into()).into_option() {
+        Some(s) => s,
+        None => return false,
+    };
+    let derived = point_from_scalar(&candidate_scalar);
+    let derived_bytes = point_to_affine_bytes(&derived);
+    derived_bytes == *target_pubkey
+}
