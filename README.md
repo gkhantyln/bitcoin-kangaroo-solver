@@ -203,7 +203,8 @@ cargo check
 
 - **Requires public key** — Kangaroo algorithm cannot work with Bitcoin address alone. Puzzles #66-#73 are address-only publicly; you must obtain the compressed public key from out-of-band sources
 - **Checkpoint resume trade-off** — old distinguished points from previous run are kept as collision database, but all kangaroos start fresh (stale distances are incomparable across runs)
-- **WGPU on AMD: known naga compiler bug** — the WGSL→SPIR-V codegen path for Vulkan has a function call argument caching bug in naga 0.20. A patch is applied locally (see `naga-0.20.0-patch.md`); a complete fix awaits upstream
+- **WGPU on AMD: driver crash on complex shaders** — naga 0.20 produces valid SPIR-V from the WGSL kernel, but the **AMD Vulkan driver 25.8.1** crashes with `STATUS_ACCESS_VIOLATION` at `create_compute_pipeline` when the shader exceeds a complexity threshold. Workaround: the kernel is being split into multiple dispatch calls (main loop + affine conversion) so each sub-shader stays within the driver's limit.
+- **Deprecated: `naga-0.20.0-patch.md`** — the earlier naga function-call argument caching bug has been resolved by restructuring shader code to avoid problematic patterns; the patch file is retained for reference only.
 
 ## License
 
