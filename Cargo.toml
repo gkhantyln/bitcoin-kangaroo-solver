@@ -47,7 +47,7 @@ cust = { version = "0.3", optional = true }
 libc = { version = "0.2", optional = true }
 
 # wgpu (optional, cross-platform GPU)
-wgpu = { version = "0.20", optional = true }
+wgpu = { version = "0.20", features = ["spirv"], optional = true }
 pollster = { version = "0.4", optional = true }
 bytemuck = { version = "1", features = ["derive"], optional = true }
 
@@ -60,3 +60,8 @@ lto = "fat"
 codegen-units = 1
 panic = "abort"
 strip = true
+
+[dev-dependencies]
+naga_29 = { package = "naga", version = "29", features = ["wgsl-in", "spv-out"] }
+naga_20 = { package = "naga", version = "0.20", features = ["wgsl-in", "spv-out"] }
+

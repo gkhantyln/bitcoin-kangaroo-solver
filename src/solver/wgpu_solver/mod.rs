@@ -150,8 +150,11 @@ impl Solver for WgpuSolver {
             point::generate_jump_table(params.jump_table_size)
         };
 
-        let num_kangaroos = params.num_threads;
-        let dp_buffer_cap = (num_kangaroos as u32 * 400).min(2_000_000);
+        let num_kangaroos_raw = params.num_threads;
+        let wg_size: u32 = 64;
+        let workgroup_count = (num_kangaroos_raw as u32 + wg_size - 1) / wg_size;
+        let num_kangaroos = (workgroup_count * wg_size) as usize;
+        let dp_buffer_cap = (num_kangaroos_raw as u32 * 400).min(2_000_000);
 
         let shader_module = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: Some("kangaroo shader"),
@@ -215,7 +218,7 @@ impl Solver for WgpuSolver {
         });
 
         let kangaroo_buf_size = num_kangaroos as usize * std::mem::size_of::<GpuKangarooState>();
-        let mut kangaroo_states = init_kangaroo_states(params, &target_pt);
+        let mut kangaroo_states = init_kangaroo_states(params, &target_pt, num_kangaroos);
 
         let kangaroo_input_buf = device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("kangaroo_input"),
@@ -348,7 +351,7 @@ impl Solver for WgpuSolver {
                 let mut pass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor { label: Some("pass"), timestamp_writes: None });
                 pass.set_pipeline(&pipeline);
                 pass.set_bind_group(0, &bg, &[]);
-                pass.dispatch_workgroups(num_kangaroos as u32, 1, 1);
+                pass.dispatch_workgroups(workgroup_count, 1, 1);
             }
 
             encoder.copy_buffer_to_buffer(&dp_buf, 0, &dp_staging, 0, dp_buf_size as u64);
@@ -445,9 +448,10 @@ impl Solver for WgpuSolver {
 fn init_kangaroo_states(
     params: &KangarooParams,
     target_pt: &ProjectivePoint,
+    padded_count: usize,
 ) -> Vec<GpuKangarooState> {
     let n = params.num_threads;
-    let mut states = Vec::with_capacity(n);
+    let mut states = Vec::with_capacity(padded_count);
     use rand::Rng;
     let mut rng = rand::thread_rng();
 
@@ -464,6 +468,10 @@ fn init_kangaroo_states(
             let (x, y) = point_to_u32x8_xy(target_pt);
             states.push(GpuKangarooState { dist_x: x, dist_y: y, distance: [0u32; 8], is_tame: 0 });
         }
+    }
+    // Pad to padded_count with copies of first entry
+    while states.len() < padded_count {
+        states.push(states[0]);
     }
     states
 }
