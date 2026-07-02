@@ -28,10 +28,10 @@ var<private> P: array<u32, 8> = array<u32, 8>(
     0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu,
 );
 
-// ─── Shared memory ─────────────────────────────────────────────────────
-var<workgroup> wg_zvals:  array<array<u32, 8>, 64>;  // Z values for batch inversion
-var<workgroup> wg_invz:   array<array<u32, 8>, 64>;  // Computed inverses (1/Z)
-var<workgroup> wg_xaff:   array<array<u32, 8>, 64>;  // Computed affine X
+// ─── Shared memory (unused in production — kept for test compatibility) ──
+var<workgroup> wg_zvals:  array<array<u32, 8>, 64>;
+var<workgroup> wg_invz:   array<array<u32, 8>, 64>;
+var<workgroup> wg_xaff:   array<array<u32, 8>, 64>;
 
 // ── helpers ──
 fn zero_256(out: ptr<function, array<u32, 8>>) {
@@ -289,45 +289,6 @@ fn mod_inv(a: ptr<function, array<u32, 8>>, out: ptr<function, array<u32, 8>>) {
     }
 }
 
-// ── Batch modular inverse: compute 64 inverses at once ──
-// Uses Montgomery's trick: 1 Fermat inverse + 2*(n-1) mults instead of n inverses.
-//
-// NOTE: naga 0.20.0 SPIR-V backend has a bug: passing &prod[dynamic_index]
-// to a function (mod_mul) crashes the AMD Vulkan driver. We work around this
-// by copying to/from temporary array<u32, 8> via inline loops before/after
-// each mod_mul/mod_inv call.
-fn batch_invert_64() {
-    var prod: array<array<u32, 8>, 64>;
-    for (var i = 0u; i < 8u; i++) { prod[0][i] = wg_zvals[0][i]; }
-    for (var j = 1u; j < 64u; j++) {
-        var tmp: array<u32, 8>;
-        for (var i = 0u; i < 8u; i++) { tmp[i] = wg_zvals[j][i]; }
-        var acc: array<u32, 8>;
-        for (var i = 0u; i < 8u; i++) { acc[i] = prod[j - 1u][i]; }
-        mod_mul(&acc, &tmp, &acc);
-        for (var i = 0u; i < 8u; i++) { prod[j][i] = acc[i]; }
-    }
-
-    var all_inv: array<u32, 8>;
-    var last_prod: array<u32, 8>;
-    for (var i = 0u; i < 8u; i++) { last_prod[i] = prod[63][i]; }
-    mod_inv(&last_prod, &all_inv);
-
-    for (var j = 63u; j > 0u; j--) {
-        var inv_j: array<u32, 8>;
-        var prev_prod: array<u32, 8>;
-        for (var i = 0u; i < 8u; i++) { prev_prod[i] = prod[j - 1u][i]; }
-        mod_mul(&all_inv, &prev_prod, &inv_j);
-        for (var i = 0u; i < 8u; i++) { wg_invz[j][i] = inv_j[i]; }
-        var zj: array<u32, 8>;
-        for (var i = 0u; i < 8u; i++) { zj[i] = wg_zvals[j][i]; }
-        var tmp2: array<u32, 8>;
-        mod_mul(&all_inv, &zj, &tmp2);
-        for (var i = 0u; i < 8u; i++) { all_inv[i] = tmp2[i]; }
-    }
-    for (var i = 0u; i < 8u; i++) { wg_invz[0][i] = all_inv[i]; }
-}
-
 // ── Jacobian point on secp256k1 ──
 struct Jacobian {
     x: array<u32, 8>,
@@ -553,24 +514,16 @@ fn main(@builtin(local_invocation_id) lid: vec3<u32>,
     var key_is_zero = is_zero_256(&found);
 
     while (step < MAX_STEPS && key_is_zero) {
-        // ── Step 1: Write Z to shared memory, batch inverse ──
-        for (var i = 0u; i < 8u; i++) { wg_zvals[local_id][i] = pt.z[i]; }
-        workgroupBarrier();
-
-        if (local_id == 0u) { batch_invert_64(); }
-        workgroupBarrier();
+        // ── Step 1: Per-thread Z inverse (avoids AMD driver crash with barriers + point_add_mixed) ──
+        var inv_z: array<u32, 8>;
+        mod_inv(&pt.z, &inv_z);
 
         // ── Step 2: Compute affine X ──
-        var inv_z: array<u32, 8>;
-        for (var i = 0u; i < 8u; i++) { inv_z[i] = wg_invz[local_id][i]; }
-
         var inv_z_sq: array<u32, 8>;
         mod_sq(&inv_z, &inv_z_sq);
 
         var x_aff: array<u32, 8>;
         mod_mul(&pt.x, &inv_z_sq, &x_aff);
-
-        for (var i = 0u; i < 8u; i++) { wg_xaff[local_id][i] = x_aff[i]; }
 
         // ── Step 3: Y_aff for negation map ──
         if (negate) {
@@ -605,13 +558,10 @@ fn main(@builtin(local_invocation_id) lid: vec3<u32>,
 
         // ── Step 6: Distinguished point check ──
         if (step % DP_REPORT_INTERVAL == 0u) {
-            var x_aff_check: array<u32, 8>;
-            for (var i = 0u; i < 8u; i++) { x_aff_check[i] = wg_xaff[local_id][i]; }
-
-            if (is_distinguished(&x_aff_check, params.dist_bits)) {
+            if (is_distinguished(&x_aff, params.dist_bits)) {
                 let dp_idx = atomicAdd(&dist_count, 1u);
                 if (dp_idx < params.dp_capacity) {
-                    for (var i = 0u; i < 8u; i++) { dist_points[dp_idx].x[i] = x_aff_check[i]; }
+                    for (var i = 0u; i < 8u; i++) { dist_points[dp_idx].x[i] = x_aff[i]; }
                     for (var i = 0u; i < 8u; i++) { dist_points[dp_idx].distance[i] = dist[i]; }
                     dist_points[dp_idx].dist_type = select(1u, 0u, is_tame);
                 }
@@ -624,7 +574,7 @@ fn main(@builtin(local_invocation_id) lid: vec3<u32>,
 
     // ── Write final state back to host ──
     var inv_z_final: array<u32, 8>;
-    for (var i = 0u; i < 8u; i++) { inv_z_final[i] = wg_invz[local_id][i]; }
+    mod_inv(&pt.z, &inv_z_final);
 
     var inv_z_sq_final: array<u32, 8>;
     mod_sq(&inv_z_final, &inv_z_sq_final);

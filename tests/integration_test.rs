@@ -1337,11 +1337,11 @@ fn test_kangaroo_v3_while() {
     // We construct the kernel by removing workgroup declarations from the top of kangaroo.wgsl
     // and adding them back in the test section.
     let full = include_str!("../kernels/kangaroo.wgsl");
-    // Split kernel into parts: we need everything except lines 32-34 (wg memory) and lines 530+ (main fn)
+    // Split kernel into parts: we need everything except lines 30-34 (blank + wg memory) and lines 478+ (bindings + main fn)
     let preamble: String = full.lines()
         .enumerate()
         .filter(|(i, _)| {
-            *i <= 29 || (*i >= 35 && *i <= 511) || (*i >= 517 && *i <= 528)
+            *i <= 29 || (*i >= 35 && *i <= 477)
         })
         .map(|(_, l)| l)
         .collect::<Vec<_>>()
@@ -1398,7 +1398,7 @@ fn test_kangaroo_v4_point_ops() {
     let preamble: String = full.lines()
         .enumerate()
         .filter(|(i, _)| {
-            *i <= 29 || (*i >= 35 && *i <= 511) || (*i >= 517 && *i <= 528)
+            *i <= 29 || (*i >= 35 && *i <= 477)
         })
         .map(|(_, l)| l)
         .collect::<Vec<_>>()
@@ -1491,7 +1491,7 @@ fn test_kangaroo_v5_point_ops() {
     let preamble: String = full.lines()
         .enumerate()
         .filter(|(i, _)| {
-            *i <= 29 || (*i >= 35 && *i <= 511) || (*i >= 517 && *i <= 524)
+            *i <= 29 || (*i >= 35 && *i <= 477)
         })
         .map(|(_, l)| l)
         .collect::<Vec<_>>()
@@ -1563,7 +1563,7 @@ fn test_kangaroo_v6_point_double() {
     let preamble: String = full.lines()
         .enumerate()
         .filter(|(i, _)| {
-            *i <= 29 || (*i >= 35 && *i <= 511) || (*i >= 517 && *i <= 524)
+            *i <= 29 || (*i >= 35 && *i <= 477)
         })
         .map(|(_, l)| l)
         .collect::<Vec<_>>()
@@ -1621,7 +1621,7 @@ fn test_kangaroo_v7_point_add_mixed() {
     let preamble: String = full.lines()
         .enumerate()
         .filter(|(i, _)| {
-            *i <= 29 || (*i >= 35 && *i <= 511) || (*i >= 517 && *i <= 524)
+            *i <= 29 || (*i >= 35 && *i <= 477)
         })
         .map(|(_, l)| l)
         .collect::<Vec<_>>()
@@ -1685,7 +1685,7 @@ fn test_kangaroo_v8_add_mixed_once() {
     let preamble: String = full.lines()
         .enumerate()
         .filter(|(i, _)| {
-            *i <= 29 || (*i >= 35 && *i <= 511) || (*i >= 517 && *i <= 524)
+            *i <= 29 || (*i >= 35 && *i <= 477)
         })
         .map(|(_, l)| l)
         .collect::<Vec<_>>()
@@ -1746,11 +1746,11 @@ fn main(@builtin(local_invocation_id) lid: vec3<u32>, @builtin(global_invocation
 fn test_kangaroo_v9_add_mixed_simple_body() {
     let (device, _queue) = create_device();
     let full = include_str!("../kernels/kangaroo.wgsl");
-    // Include everything except point_add_mixed — we'll define a simpler one
+    // Include everything except point_add_mixed (lines 383-417) — we'll define a simpler one
     let base: String = full.lines()
         .enumerate()
         .filter(|(i, _)| {
-            *i <= 29 || (*i >= 35 && *i <= 421) || (*i >= 457 && *i <= 511) || (*i >= 517 && *i <= 524)
+            *i <= 29 || (*i >= 35 && *i <= 382) || (*i >= 418 && *i <= 477)
         })
         .map(|(_, l)| l)
         .collect::<Vec<_>>()
@@ -1838,7 +1838,7 @@ fn test_kangaroo_v10_point_add_not_called() {
     let full = include_str!("../kernels/kangaroo.wgsl");
     let preamble: String = full.lines()
         .enumerate()
-        .filter(|(i, _)| *i <= 29 || (*i >= 35 && *i <= 511) || (*i >= 517 && *i <= 524))
+        .filter(|(i, _)| *i <= 29 || (*i >= 35 && *i <= 477))
         .map(|(_, l)| l)
         .collect::<Vec<_>>()
         .join("\n");
@@ -1895,7 +1895,7 @@ fn test_kangaroo_v11_max_ops() {
     let full = include_str!("../kernels/kangaroo.wgsl");
     let preamble: String = full.lines()
         .enumerate()
-        .filter(|(i, _)| *i <= 29 || (*i >= 35 && *i <= 511) || (*i >= 517 && *i <= 524))
+        .filter(|(i, _)| *i <= 29 || (*i >= 35 && *i <= 477))
         .map(|(_, l)| l)
         .collect::<Vec<_>>()
         .join("\n");
@@ -1958,7 +1958,7 @@ fn test_kangaroo_v12_minimal_add_mixed() {
     let full = include_str!("../kernels/kangaroo.wgsl");
     let preamble: String = full.lines()
         .enumerate()
-        .filter(|(i, _)| *i <= 34 || (*i >= 35 && *i <= 528))
+        .filter(|(i, _)| *i <= 34 || (*i >= 35 && *i <= 489))
         .map(|(_, l)| l)
         .collect::<Vec<_>>()
         .join("\n");
@@ -2002,7 +2002,7 @@ fn test_kangaroo_v13_add_mixed_loop_barrier() {
     let full = include_str!("../kernels/kangaroo.wgsl");
     let preamble: String = full.lines()
         .enumerate()
-        .filter(|(i, _)| *i <= 34 || (*i >= 35 && *i <= 528))
+        .filter(|(i, _)| *i <= 34 || (*i >= 35 && *i <= 489))
         .map(|(_, l)| l)
         .collect::<Vec<_>>()
         .join("\n");
@@ -2051,7 +2051,7 @@ fn test_kangaroo_v14_add_mixed_double_loop() {
     let full = include_str!("../kernels/kangaroo.wgsl");
     let preamble: String = full.lines()
         .enumerate()
-        .filter(|(i, _)| *i <= 34 || (*i >= 35 && *i <= 528))
+        .filter(|(i, _)| *i <= 34 || (*i >= 35 && *i <= 489))
         .map(|(_, l)| l)
         .collect::<Vec<_>>()
         .join("\n");
@@ -2110,7 +2110,7 @@ fn test_kangaroo_v15_dup_buffers() {
     let preamble: String = full.lines()
         .enumerate()
         .filter(|(i, _)| {
-            *i <= 29 || (*i >= 35 && *i <= 511) || (*i >= 517 && *i <= 524)
+            *i <= 29 || (*i >= 35 && *i <= 477)
         })
         .map(|(_, l)| l)
         .collect::<Vec<_>>()
@@ -2154,7 +2154,7 @@ fn test_kangaroo_v16_for_loop_pt2() {
     // Clean full preamble (no duplicates)
     let preamble: String = full.lines()
         .enumerate()
-        .filter(|(i, _)| *i <= 34 || (*i >= 35 && *i <= 528))
+        .filter(|(i, _)| *i <= 34 || (*i >= 35 && *i <= 489))
         .map(|(_, l)| l)
         .collect::<Vec<_>>()
         .join("\n");
@@ -2335,4 +2335,1012 @@ fn test_spirv_bisect_kangaroo() {
     // Skip the DP check by finding it and removing lines until the next key_is_zero check
     
     eprintln!("\n--- Bisect variants defined ---");
+}
+
+// ─── AMD Driver Crash Bisection ───────────────────────────────────────
+//
+// Progressively adds WGSL operations to bisect_main_only.wgsl to find
+// exactly which feature/pattern triggers the AMD Vulkan driver crash.
+// Each variant builds on the previous one.
+
+const BISECT_BASELINE: &str = include_str!("../kernels/bisect_main_only.wgsl");
+
+/// Generate a bisection WGSL variant by adding function groups and/or
+/// modifying the while-loop body. `added_fns` is a raw WGSL string
+/// injected right before the @compute line. `loop_body_prefix` replaces/
+/// extends the while-loop body.
+fn make_bisect_variant(added_fns: &str, loop_body_prefix: &str) -> String {
+    // Split baseline into: preamble (structs+bindings+private) + main fn
+    let baseline = BISECT_BASELINE;
+    let compute_line = baseline.rfind("@compute @workgroup_size(64)").unwrap();
+    let (preamble, main_fn) = baseline.split_at(compute_line);
+
+    // Find the while-loop body inside main_fn and insert loop_body_prefix
+    // right after the while opening brace.
+    let while_open = main_fn.find("while (step < MAX_STEPS)").unwrap();
+    let body_start = main_fn[while_open..].find('{').unwrap() + while_open + 1;
+    let (before_body, after_body) = main_fn.split_at(body_start);
+
+    format!(
+        "{preamble}\n{added_fns}\n{before_body}\n{loop_body_prefix}\n{after_body}"
+    )
+}
+
+/// Try to dispatch a WGSL compute shader with minimal buffers.
+/// Returns Ok(()) if pipeline + dispatch succeeds, Err(msg) otherwise.
+fn try_dispatch_wgsl(
+    device: &wgpu::Device,
+    queue: &wgpu::Queue,
+    wgsl: &str,
+    label: &str,
+    num_wgs: u32,
+) -> Result<(), String> {
+    use wgpu::util::DeviceExt;
+    // Validate + compile WGSL via naga to SPIR-V to catch naga errors first
+    let _spirv = wgsl_to_spirv_naga20(wgsl).map_err(|e| format!("naga: {e}"))?;
+
+    // Create a minimal storage buffer for Params (80 bytes = 20*u32)
+    // Struct layout: target_x[8], target_y[8], dist_bits, table_size, dp_capacity, range_bits
+    let mut params_data = [0u32; 20];
+    params_data[16] = 0;    // dist_bits = 0 (distinguished if 0)
+    params_data[17] = 64;   // table_size = 64 (jump table entries)
+    params_data[18] = 256; // dp_capacity
+    let params_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+        label: Some(&format!("{label}_params")),
+        contents: bytemuck::cast_slice(&params_data),
+        usage: wgpu::BufferUsages::STORAGE,
+    });
+
+    // Kangaroo state buffer (64 kangaroos = one workgroup, each ~136 bytes)
+    let kang_size = 136u64 * 64u64;
+    let kang_buf = device.create_buffer(&wgpu::BufferDescriptor {
+        label: Some(&format!("{label}_kang")),
+        size: kang_size,
+        usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
+        mapped_at_creation: false,
+    });
+    // Fill with zeros
+    let zero_data = vec![0u8; kang_size as usize];
+    queue.write_buffer(&kang_buf, 0, &zero_data);
+
+    // Jump table buffers (64 entries each — full table)
+    let jp_size = 64u64 * 64u64; // 64 entries × JumpTablePoint (2*8*u32 = 64 bytes)
+    let jp_buf = device.create_buffer(&wgpu::BufferDescriptor {
+        label: Some(&format!("{label}_jp")),
+        size: jp_size,
+        usage: wgpu::BufferUsages::STORAGE,
+        mapped_at_creation: false,
+    });
+    let jd_size = 64u64 * 32u64; // 64 entries × JumpTableDist (8*u32 = 32 bytes)
+    let jd_buf = device.create_buffer(&wgpu::BufferDescriptor {
+        label: Some(&format!("{label}_jd")),
+        size: jd_size,
+        usage: wgpu::BufferUsages::STORAGE,
+        mapped_at_creation: false,
+    });
+
+    // DP output buffer (68 bytes per entry × capacity)
+    let dp_entry_size = 68u64;
+    let dp_capacity = 256u64;
+    let dp_size = dp_entry_size * dp_capacity;
+    let dp_buf = device.create_buffer(&wgpu::BufferDescriptor {
+        label: Some(&format!("{label}_dp")),
+        size: dp_size,
+        usage: wgpu::BufferUsages::STORAGE,
+        mapped_at_creation: false,
+    });
+
+    // DP count
+    let dc_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+        label: Some(&format!("{label}_dc")),
+        contents: bytemuck::cast_slice(&[0u32]),
+        usage: wgpu::BufferUsages::STORAGE,
+    });
+
+    // Found key
+    let fk_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+        label: Some(&format!("{label}_fk")),
+        contents: bytemuck::cast_slice(&[0u32; 8]),
+        usage: wgpu::BufferUsages::STORAGE,
+    });
+
+    // Output state (same size as kang)
+    let os_buf = device.create_buffer(&wgpu::BufferDescriptor {
+        label: Some(&format!("{label}_os")),
+        size: kang_size,
+        usage: wgpu::BufferUsages::STORAGE,
+        mapped_at_creation: false,
+    });
+
+    // Create shader module from WGSL directly (not SPIR-V, to test full driver path)
+    let module = device.create_shader_module(wgpu::ShaderModuleDescriptor {
+        label: Some(label),
+        source: wgpu::ShaderSource::Wgsl(std::borrow::Cow::Borrowed(wgsl)),
+    });
+
+    // Bind group layout (8 storage bindings matching bisect_main_only.wgsl)
+    let entries: [wgpu::BindGroupLayoutEntry; 8] = [
+        bgl_entry(0, true),  // params (uniform → storage read)
+        bgl_entry(1, false), // kangaroos
+        bgl_entry(2, true),  // jump_points
+        bgl_entry(3, true),  // jump_dists
+        bgl_entry(4, false), // dist_points
+        bgl_entry(5, false), // dist_count
+        bgl_entry(6, false), // found_key
+        bgl_entry(7, false), // output_state
+    ];
+    let bgl = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+        label: Some(&format!("{label}_bgl")),
+        entries: &entries,
+    });
+    let pll = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+        label: Some(&format!("{label}_pll")),
+        bind_group_layouts: &[&bgl],
+        push_constant_ranges: &[],
+    });
+
+    let pipeline = device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
+        label: Some(label),
+        layout: Some(&pll),
+        module: &module,
+        entry_point: "main",
+        compilation_options: Default::default(),
+    });
+
+    let bg = device.create_bind_group(&wgpu::BindGroupDescriptor {
+        label: Some(&format!("{label}_bg")),
+        layout: &bgl,
+        entries: &[
+            wgpu::BindGroupEntry { binding: 0, resource: params_buf.as_entire_binding() },
+            wgpu::BindGroupEntry { binding: 1, resource: kang_buf.as_entire_binding() },
+            wgpu::BindGroupEntry { binding: 2, resource: jp_buf.as_entire_binding() },
+            wgpu::BindGroupEntry { binding: 3, resource: jd_buf.as_entire_binding() },
+            wgpu::BindGroupEntry { binding: 4, resource: dp_buf.as_entire_binding() },
+            wgpu::BindGroupEntry { binding: 5, resource: dc_buf.as_entire_binding() },
+            wgpu::BindGroupEntry { binding: 6, resource: fk_buf.as_entire_binding() },
+            wgpu::BindGroupEntry { binding: 7, resource: os_buf.as_entire_binding() },
+        ],
+    });
+
+    let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
+        label: Some(&format!("{label}_enc")),
+    });
+    {
+        let mut pass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor {
+            label: Some(&format!("{label}_pass")),
+            timestamp_writes: None,
+        });
+        pass.set_pipeline(&pipeline);
+        pass.set_bind_group(0, &bg, &[]);
+        pass.dispatch_workgroups(num_wgs, 1, 1);
+    }
+    queue.submit(Some(encoder.finish()));
+
+    // Wait for completion with a timeout
+    device.poll(wgpu::Maintain::Wait);
+
+    // Check for device loss by trying a trivial operation
+    let check_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+        label: Some(&format!("{label}_check")),
+        contents: bytemuck::cast_slice(&[0u32]),
+        usage: wgpu::BufferUsages::COPY_SRC,
+    });
+    let staging = device.create_buffer(&wgpu::BufferDescriptor {
+        label: Some(&format!("{label}_staging")),
+        size: 4,
+        usage: wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
+        mapped_at_creation: false,
+    });
+    let mut enc2 = device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
+        label: Some(&format!("{label}_enc2")),
+    });
+    enc2.copy_buffer_to_buffer(&check_buf, 0, &staging, 0, 4);
+    queue.submit(Some(enc2.finish()));
+    device.poll(wgpu::Maintain::Wait);
+
+    // Try to map - if device lost, this will panic
+    let slice = staging.slice(..);
+    let (tx, rx) = std::sync::mpsc::channel();
+    slice.map_async(wgpu::MapMode::Read, move |r| { tx.send(r).ok(); });
+    device.poll(wgpu::Maintain::Wait);
+    rx.recv()
+        .map_err(|_| "device lost or channel disconnected".to_string())?
+        .map_err(|_| "map_async failed - device may be lost".to_string())?;
+    staging.unmap();
+
+    Ok(())
+}
+
+#[cfg(feature = "gpu-wgpu")]
+#[test]
+#[ignore = "AMD GPU crash bisection — run manually to find which operation crashes"]
+fn test_bisect_amd_driver_crash() {
+    let (device, queue) = create_device();
+
+    // We define 7 variants, each adding more operations
+    // V0: baseline (bisect_main_only.wgsl) — should always pass
+    // V1: + mod_add / mod_sub / mod_reduce
+    // V2: + mod_mul / mod_sq
+    // V3: + mod_inv (Fermat)
+    // V4: + batch_invert_64
+    // V5: + Jacobian point ops (double, add, add_mixed)
+    // V6: + full while loop with point_add_mixed
+
+    // Each variant: (label, added_fns, loop_body_prefix, standalone_bool)
+    // standalone=true means the WGSL is built from scratch (preamble + cumulative_fns + custom main)
+    let mut variants: Vec<(&str, &str, &str, bool)> = Vec::new();
+
+    // V0: baseline — no extra functions, no loop changes
+    variants.push(("V0_BASELINE", "", "", false));
+
+    // V1: add modular arithmetic helpers
+    variants.push(("V1_MOD_ADDSUB", r#"
+fn add_256(a: ptr<function, array<u32, 8>>, b: ptr<function, array<u32, 8>>, out: ptr<function, array<u32, 8>>) {
+    var c: u32 = 0u;
+    for (var i = 0u; i < 8u; i++) {
+        let s1 = (*a)[i] + (*b)[i];
+        let c1 = u32(s1 < (*a)[i]);
+        let s2 = s1 + c;
+        let c2 = u32(s2 < s1);
+        (*out)[i] = s2;
+        c = c1 + c2;
+    }
+}
+fn sub_256(a: ptr<function, array<u32, 8>>, b: ptr<function, array<u32, 8>>, out: ptr<function, array<u32, 8>>) {
+    var borrow: u32 = 0u;
+    for (var i = 0u; i < 8u; i++) {
+        let d = (*a)[i] - (*b)[i] - borrow;
+        borrow = u32(d > (*a)[i]);
+        (*out)[i] = d;
+    }
+}
+fn lt_256(a: ptr<function, array<u32, 8>>, b: ptr<function, array<u32, 8>>) -> bool {
+    for (var i = 7u; i < 8u; i--) {
+        if ((*a)[i] < (*b)[i]) { return true; }
+        if ((*a)[i] > (*b)[i]) { return false; }
+    }
+    return false;
+}
+fn gte_256(a: ptr<function, array<u32, 8>>, b: ptr<function, array<u32, 8>>) -> bool {
+    return !lt_256(a, b);
+}
+fn mod_reduce(a: ptr<function, array<u32, 8>>, out: ptr<function, array<u32, 8>>) {
+    var t: array<u32, 8>;
+    for (var i = 0u; i < 8u; i++) { t[i] = (*a)[i]; }
+    var p = P;
+    while (gte_256(&t, &p)) { sub_256(&t, &p, &t); }
+    for (var i = 0u; i < 8u; i++) { (*out)[i] = t[i]; }
+}
+fn mod_add(a: ptr<function, array<u32, 8>>, b: ptr<function, array<u32, 8>>, out: ptr<function, array<u32, 8>>) {
+    var tmp: array<u32, 8>;
+    add_256(a, b, &tmp);
+    mod_reduce(&tmp, out);
+}
+fn mod_sub(a: ptr<function, array<u32, 8>>, b: ptr<function, array<u32, 8>>, out: ptr<function, array<u32, 8>>) {
+    var tmp: array<u32, 8>;
+    sub_256(a, b, &tmp);
+    var p = P;
+    if (gte_256(&tmp, &p)) { sub_256(&tmp, &p, out); } else { for (var i = 0u; i < 8u; i++) { (*out)[i] = tmp[i]; } }
+}
+"#, r#"
+        // V1: add mod_add call to exercise the new functions
+        var v1_tmp: array<u32, 8>;
+        for (var i = 0u; i < 8u; i++) { v1_tmp[i] = dist[i]; }
+        var v1_zero: array<u32, 8>;
+        for (var i = 0u; i < 8u; i++) { v1_zero[i] = 0u; }
+        mod_add(&v1_tmp, &v1_zero, &dist);
+"#, false));
+
+    // V2: add mod_mul (schoolbook)
+    variants.push(("V2_MOD_MUL", r#"
+fn mul_32x32(a: u32, b: u32) -> vec2<u32> {
+    let aL = a & 0xFFFFu;  let aH = a >> 16u;
+    let bL = b & 0xFFFFu;  let bH = b >> 16u;
+    let lo  = aL * bL;
+    let m1  = aL * bH;
+    let m2  = aH * bL;
+    let hi  = aH * bH;
+    let sum = (lo >> 16u) + m1;
+    let r0  = (lo & 0xFFFFu) | ((sum & 0xFFFFu) << 16u);
+    let r1  = hi + (sum >> 16u) + m2;
+    return vec2<u32>(r0, r1);
+}
+fn is_zero_256(a: ptr<function, array<u32, 8>>) -> bool {
+    for (var i = 0u; i < 8u; i++) { if ((*a)[i] != 0u) { return false; } }
+    return true;
+}
+fn mod_mul(a: ptr<function, array<u32, 8>>, b: ptr<function, array<u32, 8>>, out: ptr<function, array<u32, 8>>) {
+    var lo: array<u32, 8>;
+    var hi: array<u32, 8>;
+    for (var i = 0u; i < 8u; i++) { lo[i] = 0u; hi[i] = 0u; }
+    for (var i = 0u; i < 8u; i++) {
+        var carry: u32 = 0u;
+        for (var j = 0u; j < 8u; j++) {
+            let prod = mul_32x32((*a)[i], (*b)[j]);
+            let idx = i + j;
+            if (idx < 8u) {
+                let s1 = lo[idx] + prod.x;
+                let c1 = u32(s1 < lo[idx]);
+                let s2 = s1 + carry;
+                let c2 = u32(s2 < s1);
+                lo[idx] = s2;
+                let t1 = prod.y + c1;
+                let tc1 = u32(t1 < prod.y);
+                let t2 = t1 + c2;
+                let tc2 = u32(t2 < t1);
+                carry = t2;
+                if (tc1 + tc2 > 0u) {
+                    if (idx + 1u < 8u) { lo[idx + 1u] = lo[idx + 1u] + tc1 + tc2; } else { hi[0u] = hi[0u] + tc1 + tc2; }
+                }
+            } else {
+                let hidx = idx - 8u;
+                let s1 = hi[hidx] + prod.x;
+                let c1 = u32(s1 < hi[hidx]);
+                let s2 = s1 + carry;
+                let c2 = u32(s2 < s1);
+                hi[hidx] = s2;
+                let t1 = prod.y + c1;
+                let tc1 = u32(t1 < prod.y);
+                let t2 = t1 + c2;
+                let tc2 = u32(t2 < t1);
+                carry = t2;
+                if (tc1 + tc2 > 0u && hidx + 1u < 8u) { hi[hidx + 1u] = hi[hidx + 1u] + tc1 + tc2; }
+            }
+        }
+        if (carry > 0u) { hi[i] = hi[i] + carry; }
+    }
+    if (is_zero_256(&hi)) { mod_reduce(&lo, out); return; }
+    var c: u32 = 0u;
+    for (var i = 0u; i < 8u; i++) {
+        let prod = mul_32x32(hi[i], 977u);
+        let s = prod.x + c;
+        let c1 = u32(s < c);
+        lo[i] = s;
+        c = prod.y + c1;
+    }
+    var result: array<u32, 8>;
+    for (var i = 0u; i < 8u; i++) { result[i] = lo[i]; }
+    mod_reduce(&result, out);
+}
+fn mod_sq(a: ptr<function, array<u32, 8>>, out: ptr<function, array<u32, 8>>) {
+    mod_mul(a, a, out);
+}
+"#, r#"
+        // V2: call mod_mul in loop
+        var v2_a: array<u32, 8>;
+        var v2_b: array<u32, 8>;
+        for (var i = 0u; i < 8u; i++) { v2_a[i] = pt_x[i]; v2_b[i] = pt_z[i]; }
+        var v2_out: array<u32, 8>;
+        mod_mul(&v2_a, &v2_b, &v2_out);
+"#, false));
+
+    // V3: add mod_inv (Fermat)
+    variants.push(("V3_MOD_INV", r#"
+fn copy_256(src: ptr<function, array<u32, 8>>, dst: ptr<function, array<u32, 8>>) {
+    for (var i = 0u; i < 8u; i++) { (*dst)[i] = (*src)[i]; }
+}
+fn zero_256(out: ptr<function, array<u32, 8>>) {
+    for (var i = 0u; i < 8u; i++) { (*out)[i] = 0u; }
+}
+fn one_256(out: ptr<function, array<u32, 8>>) {
+    zero_256(out); (*out)[0] = 1u;
+}
+fn mod_inv(a: ptr<function, array<u32, 8>>, out: ptr<function, array<u32, 8>>) {
+    one_256(out);
+    var exp = P;
+    exp[0] = P[0] - 2u;
+    var base: array<u32, 8>;
+    copy_256(a, &base);
+    for (var i = 7u; i < 8u; i--) {
+        var bit: u32 = 0x80000000u;
+        while (bit != 0u) {
+            mod_sq(out, out);
+            if ((exp[i] & bit) != 0u) {
+                mod_mul(out, &base, out);
+            }
+            bit = bit >> 1u;
+        }
+    }
+}
+"#, r#"
+        // V3: call mod_inv in loop
+        var v3_in: array<u32, 8>;
+        for (var i = 0u; i < 8u; i++) { v3_in[i] = pt_z[i]; }
+        var v3_out: array<u32, 8>;
+        mod_inv(&v3_in, &v3_out);
+"#, false));
+
+    // V4: add batch_invert_64 (replaces the single-thread copy with actual batch invert)
+    // Note: wg_zvals, wg_invz, wg_xaff are already declared in the baseline
+    variants.push(("V4_BATCH_INV", r#"
+fn batch_invert_64() {
+    // Copy wg_zvals into local prod array
+    var prod: array<array<u32, 8>, 64>;
+    for (var i = 0u; i < 8u; i++) { prod[0][i] = wg_zvals[0][i]; }
+    for (var j = 1u; j < 64u; j++) {
+        var tmp: array<u32, 8>;
+        for (var i = 0u; i < 8u; i++) { tmp[i] = wg_zvals[j][i]; }
+        var acc: array<u32, 8>;
+        for (var i = 0u; i < 8u; i++) { acc[i] = prod[j - 1u][i]; }
+        mod_mul(&acc, &tmp, &acc);
+        for (var i = 0u; i < 8u; i++) { prod[j][i] = acc[i]; }
+    }
+    var all_inv: array<u32, 8>;
+    var last_prod: array<u32, 8>;
+    for (var i = 0u; i < 8u; i++) { last_prod[i] = prod[63][i]; }
+    mod_inv(&last_prod, &all_inv);
+    for (var j = 63u; j > 0u; j--) {
+        var inv_j: array<u32, 8>;
+        var prev_prod: array<u32, 8>;
+        for (var i = 0u; i < 8u; i++) { prev_prod[i] = prod[j - 1u][i]; }
+        mod_mul(&all_inv, &prev_prod, &inv_j);
+        for (var i = 0u; i < 8u; i++) { wg_invz[j][i] = inv_j[i]; }
+        var zj: array<u32, 8>;
+        for (var i = 0u; i < 8u; i++) { zj[i] = wg_zvals[j][i]; }
+        var tmp2: array<u32, 8>;
+        mod_mul(&all_inv, &zj, &tmp2);
+        for (var i = 0u; i < 8u; i++) { all_inv[i] = tmp2[i]; }
+    }
+    for (var i = 0u; i < 8u; i++) { wg_invz[0][i] = all_inv[i]; }
+}
+"#, r#"
+        // V4: replace the no-op batch invert with real batch_invert_64
+        if (local_id == 0u) { batch_invert_64(); }
+"#, false));
+
+    // V5: add Jacobian point operations
+    variants.push(("V5_POINT_OPS", r#"
+struct Jacobian {
+    x: array<u32, 8>,
+    y: array<u32, 8>,
+    z: array<u32, 8>,
+}
+fn const_3(out: ptr<function, array<u32, 8>>) { for (var i = 0u; i < 8u; i++) { (*out)[i] = 0u; } (*out)[0] = 3u; }
+fn const_2(out: ptr<function, array<u32, 8>>) { for (var i = 0u; i < 8u; i++) { (*out)[i] = 0u; } (*out)[0] = 2u; }
+fn const_4(out: ptr<function, array<u32, 8>>) { for (var i = 0u; i < 8u; i++) { (*out)[i] = 0u; } (*out)[0] = 4u; }
+fn const_8(out: ptr<function, array<u32, 8>>) { for (var i = 0u; i < 8u; i++) { (*out)[i] = 0u; } (*out)[0] = 8u; }
+fn point_copy(dst: ptr<function, Jacobian>, src: ptr<function, Jacobian>) {
+    for (var i = 0u; i < 8u; i++) { (*dst).x[i] = (*src).x[i]; (*dst).y[i] = (*src).y[i]; (*dst).z[i] = (*src).z[i]; }
+}
+fn point_double(p: ptr<function, Jacobian>) -> Jacobian {
+    var px = (*p).x; var py = (*p).y; var pz = (*p).z;
+    var three: array<u32, 8>; const_3(&three);
+    var two: array<u32, 8>; const_2(&two);
+    var four: array<u32, 8>; const_4(&four);
+    var eight: array<u32, 8>; const_8(&eight);
+    var x2: array<u32, 8>; mod_sq(&px, &x2);
+    var t: array<u32, 8>; mod_mul(&x2, &three, &t);
+    var y2: array<u32, 8>; mod_sq(&py, &y2);
+    var y4: array<u32, 8>; mod_sq(&y2, &y4);
+    var xy2: array<u32, 8>; mod_mul(&px, &y2, &xy2);
+    var xy2_8: array<u32, 8>; mod_mul(&xy2, &eight, &xy2_8);
+    var t2: array<u32, 8>; mod_sq(&t, &t2);
+    var x3: array<u32, 8>; mod_sub(&t2, &xy2_8, &x3);
+    var xy2_4: array<u32, 8>; mod_mul(&xy2, &four, &xy2_4);
+    var tmp: array<u32, 8>; mod_sub(&xy2_4, &x3, &tmp);
+    var tmp2: array<u32, 8>; mod_mul(&t, &tmp, &tmp2);
+    var y4_8: array<u32, 8>; mod_mul(&y4, &eight, &y4_8);
+    var y3: array<u32, 8>; mod_sub(&tmp2, &y4_8, &y3);
+    var yz: array<u32, 8>; mod_mul(&py, &pz, &yz);
+    var z3: array<u32, 8>; mod_mul(&yz, &two, &z3);
+    return Jacobian(x3, y3, z3);
+}
+fn point_add(a: ptr<function, Jacobian>, b: ptr<function, Jacobian>) -> Jacobian {
+    var ax = (*a).x; var ay = (*a).y; var az = (*a).z;
+    var bx = (*b).x; var by = (*b).y; var bz = (*b).z;
+    var z1_2: array<u32, 8>; mod_sq(&az, &z1_2);
+    var z2_2: array<u32, 8>; mod_sq(&bz, &z2_2);
+    var u1: array<u32, 8>; mod_mul(&ax, &z2_2, &u1);
+    var u2: array<u32, 8>; mod_mul(&bx, &z1_2, &u2);
+    var z1_3: array<u32, 8>; mod_mul(&z1_2, &az, &z1_3);
+    var z2_3: array<u32, 8>; mod_mul(&z2_2, &bz, &z2_3);
+    var s1: array<u32, 8>; mod_mul(&ay, &z2_3, &s1);
+    var s2: array<u32, 8>; mod_mul(&by, &z1_3, &s2);
+    var h: array<u32, 8>; mod_sub(&u2, &u1, &h);
+    var r: array<u32, 8>; mod_sub(&s2, &s1, &r);
+    var zero: array<u32, 8>; for (var i = 0u; i < 8u; i++) { zero[i] = 0u; }
+    if (is_zero_256(&h)) {
+        if (is_zero_256(&r)) { return point_double(a); }
+        return Jacobian(zero, zero, zero);
+    }
+    var h2: array<u32, 8>; mod_sq(&h, &h2);
+    var h3: array<u32, 8>; mod_mul(&h2, &h, &h3);
+    var u1h2: array<u32, 8>; mod_mul(&u1, &h2, &u1h2);
+    var r2: array<u32, 8>; mod_sq(&r, &r2);
+    var u1h2_2: array<u32, 8>; mod_add(&u1h2, &u1h2, &u1h2_2);
+    var x3: array<u32, 8>; mod_sub(&r2, &h3, &x3);
+    var x3_2: array<u32, 8>; mod_sub(&x3, &u1h2_2, &x3_2);
+    var tmp_aa: array<u32, 8>; mod_sub(&u1h2, &x3_2, &tmp_aa);
+    var r_tmp: array<u32, 8>; mod_mul(&r, &tmp_aa, &r_tmp);
+    var s1h3: array<u32, 8>; mod_mul(&s1, &h3, &s1h3);
+    var y3: array<u32, 8>; mod_sub(&r_tmp, &s1h3, &y3);
+    var hz1: array<u32, 8>; mod_mul(&h, &az, &hz1);
+    var z3: array<u32, 8>; mod_mul(&hz1, &bz, &z3);
+    return Jacobian(x3_2, y3, z3);
+}
+fn point_add_mixed(a: ptr<function, Jacobian>, bx: ptr<function, array<u32, 8>>, by: ptr<function, array<u32, 8>>) -> Jacobian {
+    var az = (*a).z;
+    var z1_2: array<u32, 8>; mod_sq(&az, &z1_2);
+    var u1 = (*a).x;
+    var u2: array<u32, 8>; mod_mul(bx, &z1_2, &u2);
+    var z1_3: array<u32, 8>; mod_mul(&z1_2, &az, &z1_3);
+    var s1 = (*a).y;
+    var s2: array<u32, 8>; mod_mul(by, &z1_3, &s2);
+    var h: array<u32, 8>; mod_sub(&u2, &u1, &h);
+    var r: array<u32, 8>; mod_sub(&s2, &s1, &r);
+    var zero: array<u32, 8>; for (var i = 0u; i < 8u; i++) { zero[i] = 0u; }
+    if (is_zero_256(&h)) {
+        if (is_zero_256(&r)) { return point_double(a); }
+        return Jacobian(zero, zero, zero);
+    }
+    var h2: array<u32, 8>; mod_sq(&h, &h2);
+    var h3: array<u32, 8>; mod_mul(&h2, &h, &h3);
+    var u1h2: array<u32, 8>; mod_mul(&u1, &h2, &u1h2);
+    var r2: array<u32, 8>; mod_sq(&r, &r2);
+    var u1h2_2: array<u32, 8>; mod_add(&u1h2, &u1h2, &u1h2_2);
+    var x3: array<u32, 8>; mod_sub(&r2, &h3, &x3);
+    var x3_2: array<u32, 8>; mod_sub(&x3, &u1h2_2, &x3_2);
+    var tmp_m: array<u32, 8>; mod_sub(&u1h2, &x3_2, &tmp_m);
+    var r_tmp: array<u32, 8>; mod_mul(&r, &tmp_m, &r_tmp);
+    var s1h3: array<u32, 8>; mod_mul(&s1, &h3, &s1h3);
+    var y3: array<u32, 8>; mod_sub(&r_tmp, &s1h3, &y3);
+    var z3: array<u32, 8>; mod_mul(&h, &az, &z3);
+    return Jacobian(x3_2, y3, z3);
+}
+"#, r#"
+        // V5: construct a Jacobian point and call point_double on it
+        var jpt: Jacobian;
+        for (var i = 0u; i < 8u; i++) { jpt.x[i] = pt_x[i]; jpt.y[i] = pt_y[i]; jpt.z[i] = pt_z[i]; }
+        var doubled = point_double(&jpt);
+        for (var i = 0u; i < 8u; i++) { pt_x[i] = doubled.x[i]; pt_y[i] = doubled.y[i]; pt_z[i] = doubled.z[i]; }
+"#, false));
+
+    // V5b: call point_add_mixed in V5's simple context (no affine conversion arrays).
+    // Tests if crash is from point_add_mixed itself vs extra loop-body arrays.
+    variants.push(("V5B_POINT_ADD_MIXED", "", r#"
+        var jpt: Jacobian;
+        for (var i = 0u; i < 8u; i++) { jpt.x[i] = pt_x[i]; jpt.y[i] = pt_y[i]; jpt.z[i] = pt_z[i]; }
+        var bx: array<u32, 8>; for (var i = 0u; i < 8u; i++) { bx[i] = jump_points[0].dx[i]; }
+        var by: array<u32, 8>; for (var i = 0u; i < 8u; i++) { by[i] = jump_points[0].dy[i]; }
+        var bx_cp: array<u32, 8>; for (var i = 0u; i < 8u; i++) { bx_cp[i] = bx[i]; }
+        var by_cp: array<u32, 8>; for (var i = 0u; i < 8u; i++) { by_cp[i] = by[i]; }
+        var new_pt = point_add_mixed(&jpt, &bx_cp, &by_cp);
+        for (var i = 0u; i < 8u; i++) { pt_x[i] = new_pt.x[i]; pt_y[i] = new_pt.y[i]; pt_z[i] = new_pt.z[i]; }
+"#, false));
+
+    // V6: function definitions only (hash_x, is_distinguished) — no standalone
+    // The standalone full-kernel test is done via sub-variants below
+    variants.push(("V6_FUNC_DEFS", r#"
+fn hash_x(x: ptr<function, array<u32, 8>>) -> u32 {
+    var h: u32 = 0u;
+    for (var i = 0u; i < 8u; i++) { h = h ^ (*x)[i]; }
+    return h;
+}
+fn is_distinguished(x: ptr<function, array<u32, 8>>, bits: u32) -> bool {
+    if (bits == 0u) { return true; }
+    return (hash_x(x) & ((1u << bits) - 1u)) == 0u;
+}
+"#, "", false));
+
+    eprintln!("\n═══ AMD GPU Driver Crash Bisection ═══");
+    eprintln!("Testing {} variants from baseline to full kernel...", variants.len());
+
+    // Accumulate function definitions across variants so each variant includes all prior functions
+    let mut cumulative_fns = String::new();
+    for (i, (label, added_fns, loop_prefix, standalone)) in variants.iter().enumerate() {
+        cumulative_fns.push_str(added_fns);
+        let wgsl = if *standalone {
+            // Build standalone WGSL: baseline preamble + cumulative functions + custom main
+            let baseline = BISECT_BASELINE;
+            let compute_line = baseline.rfind("@compute @workgroup_size(64)").unwrap();
+            let preamble = &baseline[..compute_line];
+            // V6 custom main: full kangaroo loop with point ops, affine conversion, DP reporting
+            let v6_main = format!(r#"
+@compute @workgroup_size(64)
+fn main(@builtin(global_invocation_id) gid: vec3<u32>, @builtin(local_invocation_index) local_id: u32) {{
+    let idx = gid.x;
+    var pt_x: array<u32, 8>;
+    var pt_y: array<u32, 8>;
+    var pt_z: array<u32, 8>;
+    for (var i = 0u; i < 8u; i++) {{ pt_x[i] = kangaroos[idx].dist_x[i]; }}
+    for (var i = 0u; i < 8u; i++) {{ pt_y[i] = kangaroos[idx].dist_y[i]; }}
+    pt_z[0] = 1u; for (var i = 1u; i < 8u; i++) {{ pt_z[i] = 0u; }}
+
+    var dist: array<u32, 8>;
+    for (var i = 0u; i < 8u; i++) {{ dist[i] = kangaroos[idx].distance[i]; }}
+    let is_tame = kangaroos[idx].is_tame != 0u;
+
+    let MAX_STEPS = 1000u;
+    var step = 0u;
+    while (step < MAX_STEPS) {{
+        // Copy Z values to workgroup
+        for (var i = 0u; i < 8u; i++) {{ wg_zvals[local_id][i] = pt_z[i]; }}
+        workgroupBarrier();
+
+        // Batch invert (single-thread)
+        if (local_id == 0u) {{ batch_invert_64(); }}
+        workgroupBarrier();
+
+        // Affine X from Jacobian
+        var inv_z: array<u32, 8>;
+        for (var i = 0u; i < 8u; i++) {{ inv_z[i] = wg_invz[local_id][i]; }}
+        var inv_z_sq: array<u32, 8>;
+        mod_sq(&inv_z, &inv_z_sq);
+        var x_aff: array<u32, 8>;
+        mod_mul(&pt_x, &inv_z_sq, &x_aff);
+
+        var inv_z_cb: array<u32, 8>;
+        mod_mul(&inv_z_sq, &inv_z, &inv_z_cb);
+        var y_aff: array<u32, 8>;
+        mod_mul(&pt_y, &inv_z_cb, &y_aff);
+        if ((y_aff[7u] & 0x80u) != 0u) {{
+            for (var i = 0u; i < 8u; i++) {{ pt_y[i] = P[i] - pt_y[i]; }}
+        }}
+
+        for (var i = 0u; i < 8u; i++) {{ wg_xaff[local_id][i] = x_aff[i]; }}
+
+        // Jump index
+        let hv = hash_x(&x_aff);
+        let ji = hv % params.table_size;
+
+        // Apply point_add_mixed
+        var jpt: Jacobian;
+        for (var i = 0u; i < 8u; i++) {{ jpt.x[i] = jump_points[ji].dx[i]; jpt.y[i] = jump_points[ji].dy[i]; jpt.z[i] = 0u; }}
+        jpt.z[0] = 1u;
+        var new_pt = point_add_mixed(&jpt, &jpt.x, &jpt.y);
+        for (var i = 0u; i < 8u; i++) {{ pt_x[i] = new_pt.x[i]; pt_y[i] = new_pt.y[i]; pt_z[i] = new_pt.z[i]; }}
+
+        // Distance update
+        var jd_ddist: array<u32, 8>;
+        for (var i = 0u; i < 8u; i++) {{ jd_ddist[i] = jump_dists[ji].ddist[i]; }}
+        mod_add(&dist, &jd_ddist, &dist);
+
+        // Distinguished point check
+        if (is_distinguished(&x_aff, params.dist_bits)) {{
+            let dp_idx = atomicAdd(&dist_count, 1u);
+            if (dp_idx < params.dp_capacity) {{
+                for (var i = 0u; i < 8u; i++) {{ dist_points[dp_idx].x[i] = x_aff[i]; }}
+                for (var i = 0u; i < 8u; i++) {{ dist_points[dp_idx].distance[i] = dist[i]; }}
+                dist_points[dp_idx].dist_type = select(1u, 0u, is_tame);
+            }}
+        }}
+
+        step++;
+    }}
+
+    for (var i = 0u; i < 8u; i++) {{ output_state[idx].dist_x[i] = pt_x[i]; }}
+    for (var i = 0u; i < 8u; i++) {{ output_state[idx].distance[i] = dist[i]; }}
+    output_state[idx].is_tame = select(0u, 1u, is_tame);
+}}
+"#);
+            format!("{preamble}\n{cumulative_fns}\n{v6_main}")
+        } else {
+            make_bisect_variant(&cumulative_fns, loop_prefix)
+        };
+
+        eprintln!("\n--- [{}/{}] {label} ---", i + 1, variants.len());
+
+        match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            try_dispatch_wgsl(&device, &queue, &wgsl, label, 1)
+        })) {
+            Ok(Ok(())) => {
+                eprintln!("  ✅ PASSED — variant {} compiled + dispatched successfully", label);
+            }
+            Ok(Err(e)) => {
+                eprintln!("  ❌ FAILED (error): variant {} — {e}", label);
+                eprintln!("\n🔍 BISECTION RESULT: Crash first occurs in variant {label}");
+                eprintln!("    This variant adds the following WGSL operations:");
+                for line in added_fns.lines() {
+                    if line.trim().starts_with("fn ") || line.trim().starts_with("struct ") {
+                        eprintln!("    - {}", line.trim());
+                    }
+                }
+                if !loop_prefix.trim().is_empty() {
+                    eprintln!("    And modifies the loop body with additional operations");
+                }
+                eprintln!("\n    SRC size: {} bytes", wgsl.len());
+                std::process::abort();
+            }
+            Err(panic) => {
+                let msg = if let Some(s) = panic.downcast_ref::<String>() {
+                    s.clone()
+                } else if let Some(s) = panic.downcast_ref::<&str>() {
+                    s.to_string()
+                } else {
+                    "unknown panic".to_string()
+                };
+                eprintln!("  💥 PANIC/CRASH: variant {} — {msg}", label);
+                eprintln!("\n🔍 BISECTION RESULT: Driver crash first occurs in variant {label}");
+                eprintln!("    This variant adds the following WGSL operations:");
+                for line in added_fns.lines() {
+                    if line.trim().starts_with("fn ") || line.trim().starts_with("struct ") {
+                        eprintln!("    - {}", line.trim());
+                    }
+                }
+                eprintln!("\n    SRC size: {} bytes", wgsl.len());
+                std::process::abort();
+            }
+        }
+    }
+
+    // ===== Phase 2: sub-bisection within V6's additions =====
+    // Only reached if V6 passes (no crash) — but since V6 crashes, this acts
+    // as a fallback to handle the case where the coarse bisection succeeded.
+    // In practice, the sub-variants below V6 should crash first.
+    // Helper: build V6 sub-variant main by filtering out certain features
+    // jump_read_only: compute hash index and read jump_points/jump_dists, but don't call point_add_mixed or update distance
+    // skip_point_add: compute hash, read tables, update distance, but DON'T call point_add_mixed
+    let build_v6sub = |remove_jump: bool, remove_dp: bool, remove_ycheck: bool, jump_read_only: bool, skip_point_add: bool| -> String {
+        let mut body = String::new();
+        body.push_str(r#"
+        for (var i = 0u; i < 8u; i++) { wg_zvals[local_id][i] = pt_z[i]; }
+        workgroupBarrier();
+        if (local_id == 0u) { batch_invert_64(); }
+        workgroupBarrier();
+"#);
+        if remove_ycheck {
+            // Minimal: just copy inv_z from workgroup, no affine/jump/DP
+            body.push_str(r#"
+        var inv_z: array<u32, 8>;
+        for (var i = 0u; i < 8u; i++) { inv_z[i] = wg_invz[local_id][i]; }
+"#);
+        } else {
+            body.push_str(r#"
+        var inv_z: array<u32, 8>;
+        for (var i = 0u; i < 8u; i++) { inv_z[i] = wg_invz[local_id][i]; }
+        var inv_z_sq: array<u32, 8>;
+        mod_sq(&inv_z, &inv_z_sq);
+        var x_aff: array<u32, 8>;
+        mod_mul(&pt_x, &inv_z_sq, &x_aff);
+        var inv_z_cb: array<u32, 8>;
+        mod_mul(&inv_z_sq, &inv_z, &inv_z_cb);
+        var y_aff: array<u32, 8>;
+        mod_mul(&pt_y, &inv_z_cb, &y_aff);
+        if ((y_aff[7u] & 0x80u) != 0u) {
+            for (var i = 0u; i < 8u; i++) { pt_y[i] = P[i] - pt_y[i]; }
+        }
+        for (var i = 0u; i < 8u; i++) { wg_xaff[local_id][i] = x_aff[i]; }
+"#);
+            if !remove_jump {
+                let base_jump = r#"
+        let hv = hash_x(&x_aff);
+        let ji = hv % params.table_size;
+        var jpt: Jacobian;
+        for (var i = 0u; i < 8u; i++) { jpt.x[i] = jump_points[ji].dx[i]; jpt.y[i] = jump_points[ji].dy[i]; jpt.z[i] = 0u; }
+        jpt.z[0] = 1u;
+        var jd_ddist: array<u32, 8>;
+        for (var i = 0u; i < 8u; i++) { jd_ddist[i] = jump_dists[ji].ddist[i]; }
+"#;
+                body.push_str(base_jump);
+                if !skip_point_add {
+                    body.push_str(r#"
+        var jpt_x_cp: array<u32, 8>;
+        var jpt_y_cp: array<u32, 8>;
+        for (var i = 0u; i < 8u; i++) { jpt_x_cp[i] = jpt.x[i]; jpt_y_cp[i] = jpt.y[i]; }
+        var new_pt = point_add_mixed(&jpt, &jpt_x_cp, &jpt_y_cp);
+        for (var i = 0u; i < 8u; i++) { pt_x[i] = new_pt.x[i]; pt_y[i] = new_pt.y[i]; pt_z[i] = new_pt.z[i]; }
+"#);
+                }
+                if !jump_read_only {
+                    body.push_str(r#"
+        mod_add(&dist, &jd_ddist, &dist);
+"#);
+                }
+            }
+            if !remove_dp {
+                body.push_str(r#"
+        if (is_distinguished(&x_aff, params.dist_bits)) {
+            let dp_idx = atomicAdd(&dist_count, 1u);
+            if (dp_idx < params.dp_capacity) {
+                for (var i = 0u; i < 8u; i++) { dist_points[dp_idx].x[i] = x_aff[i]; }
+                for (var i = 0u; i < 8u; i++) { dist_points[dp_idx].distance[i] = dist[i]; }
+                dist_points[dp_idx].dist_type = select(1u, 0u, is_tame);
+            }
+        }
+"#);
+            }
+        }
+        body
+    };
+
+    // Flags: (label, remove_jump, remove_dp, remove_ycheck, jump_read_only, skip_point_add)
+    // skip_point_add=true means compute hash, read jump table, but DON'T call point_add_mixed
+    // This isolates point_add_mixed call vs distance update vs full jump
+    // Flags: (label, remove_jump, remove_dp, remove_ycheck, jump_read_only, skip_point_add, ws)
+    // ws = workgroup size override (64=default, 32=halved)
+    // For sub-variants that include jump (remove_jump=false):
+    //   jump_read_only=true, skip_point_add=true  → hash + table read ONLY
+    //   jump_read_only=true, skip_point_add=false → hash + table read + point_add_mixed (no dist update)
+    //   jump_read_only=false, skip_point_add=true → hash + table read + distance update (no point_add_mixed)
+    //   jump_read_only=false, skip_point_add=false → full: point_add_mixed + distance
+    let sub_variants: Vec<(&str, bool, bool, bool, bool, bool, u32)> = vec![
+        ("V6C_BATCH_INVERT_ONLY", true, true, true, false, false, 64),
+        ("V6A_AFFINE_NO_JUMP_DP", true, true, false, false, false, 64),
+        ("V6B1_HASH_ONLY", true, true, false, true, false, 64),
+        // Hash + jump table read ONLY (no point_add_mixed, no distance update)
+        ("V6B2_JUMP_READ", false, true, false, true, true, 64),
+        // V6B3 with INDIVIDUAL mod_inv instead of workgroup batch_invert.
+        // No barriers, no workgroup memory. Tests if batch_invert ops cause the crash.
+        ("V6B3_BASICINV", false, true, false, true, false, 64),
+        // Hash + jump read + distance update (no point_add_mixed)
+        ("V6B4_DIST_UPDATE", false, true, false, false, true, 64),
+        // Full: point_add_mixed + distance (no DP)
+        ("V6B_AFFINE_JUMP_NO_DP", false, true, false, false, false, 64),
+        // Full + DP: everything
+        ("V6_FULL_NO_YCHECK", false, false, true, false, false, 64),
+    ];
+
+    for (label, remove_jump, remove_dp, remove_ycheck, jump_read_only, skip_point_add, ws) in &sub_variants {
+        let body_str = if *label == "V6B3_FNSCOPE" {
+            // Same V6B3 logic but with point_add_mixed scratch arrays declared at FUNCTION scope
+            // (outside the while loop). Tests if the crash is caused by too many OpVariable
+            // declarations INSIDE the while loop in SPIR-V.
+            // The body is empty (all work happens in the custom main function template).
+            String::new()
+        } else if *label == "V6B3_BASICINV" {
+            // Same V6B3 logic but with basic mod_inv instead of batch_invert.
+            // No workgroup barriers, no workgroup memory. Tests if the batch_invert +
+            // workgroup operations cause the crash with point_add_mixed.
+            let mut s = String::new();
+            s.push_str(r#"
+        var inv_z: array<u32, 8>;
+        mod_inv(&pt_z, &inv_z);
+        var inv_z_sq: array<u32, 8>;
+        mod_sq(&inv_z, &inv_z_sq);
+        var x_aff: array<u32, 8>;
+        mod_mul(&pt_x, &inv_z_sq, &x_aff);
+        var inv_z_cb: array<u32, 8>;
+        mod_mul(&inv_z_sq, &inv_z, &inv_z_cb);
+        var y_aff: array<u32, 8>;
+        mod_mul(&pt_y, &inv_z_cb, &y_aff);
+        if ((y_aff[7u] & 0x80u) != 0u) {
+            for (var i = 0u; i < 8u; i++) { pt_y[i] = P[i] - pt_y[i]; }
+        }
+        let hv = hash_x(&x_aff);
+        let ji = hv % params.table_size;
+        var jpt: Jacobian;
+        for (var i = 0u; i < 8u; i++) { jpt.x[i] = jump_points[ji].dx[i]; jpt.y[i] = jump_points[ji].dy[i]; jpt.z[i] = 0u; }
+        jpt.z[0] = 1u;
+        var jd_ddist: array<u32, 8>;
+        for (var i = 0u; i < 8u; i++) { jd_ddist[i] = jump_dists[ji].ddist[i]; }
+        var jpt_x_cp: array<u32, 8>;
+        var jpt_y_cp: array<u32, 8>;
+        for (var i = 0u; i < 8u; i++) { jpt_x_cp[i] = jpt.x[i]; jpt_y_cp[i] = jpt.y[i]; }
+        var new_pt = point_add_mixed(&jpt, &jpt_x_cp, &jpt_y_cp);
+        for (var i = 0u; i < 8u; i++) { pt_x[i] = new_pt.x[i]; pt_y[i] = new_pt.y[i]; pt_z[i] = new_pt.z[i]; }
+"#);
+            s
+        } else {
+            build_v6sub(*remove_jump, *remove_dp, *remove_ycheck, *jump_read_only, *skip_point_add)
+        };
+
+        let scratch_pre = r#"
+    // Scratch arrays (function scope — outside while loop to reduce OpVariable in structured CF)
+    var sc_jpt_x_cp: array<u32, 8>; var sc_jpt_y_cp: array<u32, 8>;
+    var sc_az: array<u32, 8>; var sc_z1_2: array<u32, 8>; var sc_u1: array<u32, 8>;
+    var sc_u2: array<u32, 8>; var sc_z1_3: array<u32, 8>; var sc_s1: array<u32, 8>;
+    var sc_s2: array<u32, 8>; var sc_h: array<u32, 8>; var sc_r: array<u32, 8>;
+    var sc_h2: array<u32, 8>; var sc_h3: array<u32, 8>; var sc_u1h2: array<u32, 8>;
+    var sc_r2: array<u32, 8>; var sc_u1h2_2: array<u32, 8>; var sc_x3: array<u32, 8>;
+    var sc_x3_2: array<u32, 8>; var sc_tmp: array<u32, 8>; var sc_r_tmp: array<u32, 8>;
+    var sc_s1h3: array<u32, 8>; var sc_y3: array<u32, 8>; var sc_z3: array<u32, 8>;
+"#;
+
+        let v6_main = if *label == "V6B3_FNSCOPE" {
+            let full_body = build_v6sub(*remove_jump, *remove_dp, *remove_ycheck, *jump_read_only, true);
+            format!(r#"
+@compute @workgroup_size(1)
+fn main(@builtin(global_invocation_id) gid: vec3<u32>, @builtin(local_invocation_index) local_id: u32) {{
+    let idx = gid.x;
+    var pt_x: array<u32, 8>;
+    var pt_y: array<u32, 8>;
+    var pt_z: array<u32, 8>;
+    for (var i = 0u; i < 8u; i++) {{ pt_x[i] = kangaroos[idx].dist_x[i]; }}
+    for (var i = 0u; i < 8u; i++) {{ pt_y[i] = kangaroos[idx].dist_y[i]; }}
+    pt_z[0] = 1u; for (var i = 1u; i < 8u; i++) {{ pt_z[i] = 0u; }}
+    var dist: array<u32, 8>;
+    for (var i = 0u; i < 8u; i++) {{ dist[i] = kangaroos[idx].distance[i]; }}
+    let is_tame = kangaroos[idx].is_tame != 0u;{scratch_pre}
+    let MAX_STEPS = 1000u;
+    var step = 0u;
+    while (step < MAX_STEPS) {{
+        {full_body}
+        for (var i = 0u; i < 8u; i++) {{ sc_jpt_x_cp[i] = jpt.x[i]; sc_jpt_y_cp[i] = jpt.y[i]; }}
+        for (var i = 0u; i < 8u; i++) {{ sc_az[i] = jpt.z[i]; }}
+        mod_sq(&sc_az, &sc_z1_2);
+        for (var i = 0u; i < 8u; i++) {{ sc_u1[i] = jpt.x[i]; }}
+        mod_mul(&sc_jpt_x_cp, &sc_z1_2, &sc_u2);
+        mod_mul(&sc_z1_2, &sc_az, &sc_z1_3);
+        for (var i = 0u; i < 8u; i++) {{ sc_s1[i] = jpt.y[i]; }}
+        mod_mul(&sc_jpt_y_cp, &sc_z1_3, &sc_s2);
+        mod_sub(&sc_u2, &sc_u1, &sc_h);
+        mod_sub(&sc_s2, &sc_s1, &sc_r);
+        var sc_h_zero = true; for (var i = 0u; i < 8u; i++) {{ if (sc_h[i] != 0u) {{ sc_h_zero = false; }} }}
+        var sc_r_zero = true; for (var i = 0u; i < 8u; i++) {{ if (sc_r[i] != 0u) {{ sc_r_zero = false; }} }}
+        if (sc_h_zero) {{
+            if (sc_r_zero) {{ var dp = point_double(&jpt); for (var i = 0u; i < 8u; i++) {{ pt_x[i] = dp.x[i]; pt_y[i] = dp.y[i]; pt_z[i] = dp.z[i]; }} }}
+            else {{ var sc_zero: array<u32, 8>; zero_256(&sc_zero); for (var i = 0u; i < 8u; i++) {{ pt_x[i] = sc_zero[i]; pt_y[i] = sc_zero[i]; pt_z[i] = sc_zero[i]; }} }}
+        }} else {{
+            mod_sq(&sc_h, &sc_h2);
+            mod_mul(&sc_h2, &sc_h, &sc_h3);
+            mod_mul(&sc_u1, &sc_h2, &sc_u1h2);
+            mod_sq(&sc_r, &sc_r2);
+            mod_add(&sc_u1h2, &sc_u1h2, &sc_u1h2_2);
+            mod_sub(&sc_r2, &sc_h3, &sc_x3);
+            mod_sub(&sc_x3, &sc_u1h2_2, &sc_x3_2);
+            mod_sub(&sc_u1h2, &sc_x3_2, &sc_tmp);
+            mod_mul(&sc_r, &sc_tmp, &sc_r_tmp);
+            mod_mul(&sc_s1, &sc_h3, &sc_s1h3);
+            mod_sub(&sc_r_tmp, &sc_s1h3, &sc_y3);
+            mod_mul(&sc_h, &sc_az, &sc_z3);
+            for (var i = 0u; i < 8u; i++) {{ pt_x[i] = sc_x3_2[i]; pt_y[i] = sc_y3[i]; pt_z[i] = sc_z3[i]; }}
+        }}
+        step++;
+    }}
+    for (var i = 0u; i < 8u; i++) {{ output_state[idx].dist_x[i] = pt_x[i]; }}
+    for (var i = 0u; i < 8u; i++) {{ output_state[idx].distance[i] = dist[i]; }}
+    output_state[idx].is_tame = select(0u, 1u, is_tame);
+}}
+"#)
+        } else {
+            format!(r#"
+@compute @workgroup_size({ws})
+fn main(@builtin(global_invocation_id) gid: vec3<u32>, @builtin(local_invocation_index) local_id: u32) {{
+    let idx = gid.x;
+    var pt_x: array<u32, 8>;
+    var pt_y: array<u32, 8>;
+    var pt_z: array<u32, 8>;
+    for (var i = 0u; i < 8u; i++) {{ pt_x[i] = kangaroos[idx].dist_x[i]; }}
+    for (var i = 0u; i < 8u; i++) {{ pt_y[i] = kangaroos[idx].dist_y[i]; }}
+    pt_z[0] = 1u; for (var i = 1u; i < 8u; i++) {{ pt_z[i] = 0u; }}
+    var dist: array<u32, 8>;
+    for (var i = 0u; i < 8u; i++) {{ dist[i] = kangaroos[idx].distance[i]; }}
+    let is_tame = kangaroos[idx].is_tame != 0u;
+    let MAX_STEPS = 1000u;
+    var step = 0u;
+    while (step < MAX_STEPS) {{
+        {body}
+        step++;
+    }}
+    for (var i = 0u; i < 8u; i++) {{ output_state[idx].dist_x[i] = pt_x[i]; }}
+    for (var i = 0u; i < 8u; i++) {{ output_state[idx].distance[i] = dist[i]; }}
+    output_state[idx].is_tame = select(0u, 1u, is_tame);
+}}
+"#, ws = ws, body = body_str)
+        };
+
+        let baseline = BISECT_BASELINE;
+        let compute_line = baseline.rfind("@compute @workgroup_size(64)").unwrap();
+        let preamble = &baseline[..compute_line];
+        let wgsl = format!("{preamble}\n{cumulative_fns}\n{v6_main}");
+
+        eprintln!("\n--- [SUB] {label} ---");
+
+        match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            try_dispatch_wgsl(&device, &queue, &wgsl, label, 1)
+        })) {
+            Ok(Ok(())) => {
+                eprintln!("  ✅ PASSED — variant {label} dispatched successfully");
+            }
+            Ok(Err(e)) => {
+                eprintln!("  ❌ FAILED (error): variant {label} — {e}");
+                eprintln!("\n🔍 SUB-BISECTION RESULT: Crash first occurs at {label}");
+                std::process::abort();
+            }
+            Err(panic) => {
+                let msg = if let Some(s) = panic.downcast_ref::<String>() {
+                    s.clone()
+                } else if let Some(s) = panic.downcast_ref::<&str>() {
+                    s.to_string()
+                } else {
+                    "unknown panic".to_string()
+                };
+                eprintln!("  💥 CRASH: variant {label} — {msg}");
+                eprintln!("\n🔍 SUB-BISECTION RESULT: Crash first occurs at {label}");
+                std::process::abort();
+            }
+        }
+    }
+
+    eprintln!("\n✅ All variants passed — no AMD driver crash detected in this bisection range.");
 }

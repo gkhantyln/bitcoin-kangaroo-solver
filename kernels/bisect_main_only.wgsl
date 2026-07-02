@@ -14,7 +14,7 @@ struct DistPointOutput { x: array<u32, 8>, distance: array<u32, 8>, dist_type: u
 struct FoundKeyOutput { key: array<u32, 8>, }
 struct OutputState { dist_x: array<u32, 8>, dist_y: array<u32, 8>, distance: array<u32, 8>, is_tame: u32, }
 
-@group(0) @binding(0) var<uniform> params: Params;
+@group(0) @binding(0) var<storage, read> params: Params;
 @group(0) @binding(1) var<storage, read_write> kangaroos: array<KangarooInit>;
 @group(0) @binding(2) var<storage, read> jump_points: array<JumpTablePoint>;
 @group(0) @binding(3) var<storage, read> jump_dists: array<JumpTableDist>;
@@ -46,7 +46,7 @@ fn main(@builtin(global_invocation_id) gid: vec3<u32>, @builtin(local_invocation
     for (var i = 0u; i < 8u; i++) { dist[i] = kangaroos[idx].distance[i]; }
     let is_tame = kangaroos[idx].is_tame != 0u;
 
-    let MAX_STEPS = 1000000u;
+    let MAX_STEPS = 1000u;
     let DP_REPORT_INTERVAL = 2048u;
 
     var step = 0u;
@@ -65,8 +65,8 @@ fn main(@builtin(global_invocation_id) gid: vec3<u32>, @builtin(local_invocation
 
         for (var i = 0u; i < 8u; i++) { wg_xaff[local_id][i] = pt_x[i]; }
 
-        let h = 0u;
-        let ji = h % 64u;
+        var h: u32 = 0u;
+        var ji: u32 = h % 64u;
 
         var jp_x: array<u32, 8>;
         var jp_y: array<u32, 8>;
