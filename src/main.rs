@@ -17,7 +17,7 @@ use bitcoin_kangaroo_solver::{
 #[command(version = APP_VERSION)]
 #[command(about = "Pollard's Kangaroo algorithm based Bitcoin puzzle solver")]
 struct Args {
-    #[arg(short, long, help = "Puzzle number (66-74, 135, 140, 145, 150, 155, 160). Uses built-in range, address & pubkey.")]
+    #[arg(short, long, help = "Puzzle number (135, 140, 145, 150, 155, 160). Uses built-in range, address & pubkey.")]
     puzzle: Option<u32>,
 
     #[arg(long, help = "Start range in hex (32 bytes). Required if --puzzle not set.")]

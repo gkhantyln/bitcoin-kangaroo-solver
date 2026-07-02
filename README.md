@@ -48,21 +48,21 @@ The Pollard's Kangaroo algorithm is mathematically proven to find private keys g
 For a key in range of size `N`, the expected number of iterations is `2√N` (with SOTA K=1.15: `≈ 2.3√N`). This is **exponentially faster** than brute-force which requires `N/2` iterations on average.
 
 For reference:
-- Puzzle #66 (`2^66` range) → ~2^33.2 expected steps (≈ 10 billion)
 - Puzzle #135 (`2^135` range) → ~2^67.6 expected steps (≈ 2×10^20)
+- Puzzle #160 (`2^160` range) → ~2^80.6 expected steps (≈ 1.7×10^24)
 
 ## 🚀 Performance & Tuning
 
 ### How Fast Can It Go?
 
-*Expected time varies enormously by range size. The table below is for Puzzle #66 (2^66 range). Higher puzzles scale exponentially — Puzzle #135 (2^135 range) is 2^69× harder.*
+*Expected time varies enormously by range size. Higher puzzles scale exponentially — Puzzle #135 (2^135 range) is 2^69× harder than Puzzle #66.*
 
-| Config | Puzzle #66 expected time (est.) |
-|--------|-------------------------------|
-| 8 CPU threads (modern x86) | ~4-8 months |
-| 1x NVIDIA RTX 4090 (CUDA) | ~2-4 weeks |
-| 1x AMD Radeon (WGPU/Vulkan) | ~3-6 weeks |
-| 4x GPU cluster | ~5-10 days |
+| Config | Estimated MKey/s | Time for 2^66 range | Time for 2^135 range |
+|--------|-----------------|---------------------|----------------------|
+| 8 CPU threads (modern x86) | ~5 MKey/s | ~4-8 months | impractical |
+| 1x NVIDIA RTX 4090 (CUDA) | ~500 MKey/s | ~2-4 weeks | ~10^17 years |
+| 1x AMD Radeon (WGPU/Vulkan) | ~300 MKey/s | ~3-6 weeks | ~10^17 years |
+| 4x GPU cluster | ~2 GKey/s | ~5-10 days | ~10^16 years |
 
 *These are estimates based on field size and known hardware benchmarks. Actual performance depends on memory bandwidth, core clock, and driver overhead.*
 
@@ -89,7 +89,7 @@ For reference:
 - **Graceful shutdown** — Ctrl+C saves state, resumes from where it left off
 - **Telegram notification** — instant alert when key is found
 - **Log file** — timestamped key discovery records
-- **Built-in puzzle table** — Puzzles #66-#74, #135, #140, #145, #150, #155, #160 with known ranges, addresses & embedded pubkeys
+- **Built-in puzzle table** — Puzzles #135, #140, #145, #150, #155, #160 with known ranges, addresses & embedded pubkeys
 
 ## Prerequisites
 
@@ -136,16 +136,13 @@ bitcoin-kangaroo-solver \
 
 # Resume from checkpoint
 bitcoin-kangaroo-solver --puzzle 135 --checkpoint puzzle.cp
-
-# For puzzles without embedded pubkey, provide --pubkey manually
-bitcoin-kangaroo-solver --puzzle 66 --pubkey 02<64_HEX_CHARS>
 ```
 
 ### Options
 
 | Flag | Description |
 |------|-------------|
-| `--puzzle <N>` | Built-in puzzle 66-74, 135, 140, 145, 150, 155, 160 (sets range + address + pubkey if embedded) |
+| `--puzzle <N>` | Built-in puzzle 135, 140, 145, 150, 155, 160 (sets range + address + embedded pubkey) |
 | `--start-range <HEX>` | Custom start range (32 bytes hex) |
 | `--end-range <HEX>` | Custom end range (32 bytes hex) |
 | `--address <ADDR>` | Target Bitcoin address (display only) |
@@ -179,7 +176,7 @@ src/
 │   └── wgpu_solver/        # WGPU compute shader solver (Vulkan/DX12/Metal)
 ├── checkpoint/mod.rs       # bincode serialization
 ├── notification/mod.rs     # FoundKey → Telegram, console, log file
-└── puzzle/mod.rs           # Built-in puzzle table (#66-#74, #135-#160 with embedded pubkeys)
+└── puzzle/mod.rs           # Built-in puzzle table (#135, #140, #145, #150, #155, #160 with embedded pubkeys)
 kernels/
 ├── kangaroo.cu             # CUDA kernel: Jacobian arithmetic, jump table, distinguished detection
 └── kangaroo.wgsl           # WGSL compute shader: cross-platform GPU kernel
@@ -207,7 +204,7 @@ cargo check
 
 ## Limitations
 
-- **Requires public key** — Kangaroo algorithm cannot work with Bitcoin address alone. Most puzzles (#66-#134, #136-#139, #141-#149, #151-#154, #156-#159) are address-only; you must obtain the compressed public key from out-of-band sources. Only puzzles #135, #140, #145, #150, #155, #160 have known public keys and are suitable for Kangaroo.
+- **Requires public key** — Kangaroo algorithm cannot work with Bitcoin address alone. Most Bitcoin Puzzle challenges are address-only; you must obtain the compressed public key from out-of-band sources. Only puzzles #135, #140, #145, #150, #155, #160 have known public keys and are suitable for Kangaroo.
 - **Checkpoint resume trade-off** — old distinguished points from previous run are kept as collision database, but all kangaroos start fresh (stale distances are incomparable across runs)
 - **WGPU on AMD: driver crash on complex shaders** — naga 0.20 produces valid SPIR-V from the WGSL kernel, but the **AMD Vulkan driver 25.8.1** crashes with `STATUS_ACCESS_VIOLATION` at `create_compute_pipeline` when the shader exceeds a complexity threshold. Workaround: the kernel is being split into multiple dispatch calls (main loop + affine conversion) so each sub-shader stays within the driver's limit.
 - **Deprecated: `naga-0.20.0-patch.md`** — the earlier naga function-call argument caching bug has been resolved by restructuring shader code to avoid problematic patterns; the patch file is retained for reference only.
