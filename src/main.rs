@@ -17,7 +17,7 @@ use bitcoin_kangaroo_solver::{
 #[command(version = APP_VERSION)]
 #[command(about = "Pollard's Kangaroo algorithm based Bitcoin puzzle solver")]
 struct Args {
-    #[arg(short, long, help = "Puzzle number (66-74). Uses built-in range & address.")]
+    #[arg(short, long, help = "Puzzle number (66-74, 135, 140, 145, 150, 155, 160). Uses built-in range, address & pubkey.")]
     puzzle: Option<u32>,
 
     #[arg(long, help = "Start range in hex (32 bytes). Required if --puzzle not set.")]
@@ -29,8 +29,8 @@ struct Args {
     #[arg(long, help = "Target Bitcoin address (for display). Required if --puzzle not set.")]
     address: Option<String>,
 
-    #[arg(long, help = "Target compressed public key in hex (66 hex chars, 02/03 prefix). REQUIRED.")]
-    pubkey: String,
+    #[arg(long, help = "Target compressed public key in hex (66 hex chars, 02/03 prefix). REQUIRED if --puzzle not set or puzzle has no embedded pubkey.")]
+    pubkey: Option<String>,
 
     #[arg(short, long, help = "Number of CPU threads (default: half of available cores)")]
     threads: Option<usize>,
@@ -79,20 +79,16 @@ fn main() {
         println!("\n{} v{} - Available Puzzles", APP_NAME, APP_VERSION);
         println!("{}", "=".repeat(60));
         for p in puzzle::get_active_puzzles() {
-            let status = if p.id <= 65 { "SOLVED" } else { "ACTIVE" };
-            println!("  #{:<4} 2^{:<4} -> 2^{:<4}  {}  [{}]", p.id, p.id - 1, p.id, p.address, status);
+            let kangaroo_ok = p.pubkey.is_some();
+            let status = if kangaroo_ok { "PUBKEY ACIK" } else { "pubkey yok" };
+            let marker = if kangaroo_ok { " [Kangaroo]"} else { "" };
+            println!("  #{:<4} 2^{:<4} -> 2^{:<4}  {}  {}{}", p.id, p.id - 1, p.id, p.address, status, marker);
         }
         println!();
         return;
     }
 
-    let target_pubkey = hex_to_pubkey(&args.pubkey);
-    let num_threads = args.threads.unwrap_or_else(|| {
-        let cores = num_cpus::get();
-        (cores / 2).max(1)
-    });
-
-    let (puzzle_id, start_range, end_range, target_address) =
+    let (puzzle_id, start_range, end_range, target_address, target_pubkey) =
         if let Some(pnum) = args.puzzle {
             let puzzles = puzzle::get_active_puzzles();
             let p = puzzles.iter().find(|p| p.id == pnum)
@@ -100,7 +96,17 @@ fn main() {
                     eprintln!("[ERROR] Puzzle #{} not found. Use --list to see available puzzles.", pnum);
                     std::process::exit(1);
                 });
-            (p.id, range_to_bytes(p.power - 1), range_to_bytes(p.power), p.address.clone())
+
+            let pubkey = if let Some(ref pk) = p.pubkey {
+                hex_to_pubkey(pk)
+            } else if let Some(ref pk_arg) = args.pubkey {
+                hex_to_pubkey(pk_arg)
+            } else {
+                eprintln!("[ERROR] Puzzle #{} has no embedded pubkey. Provide --pubkey manually.", pnum);
+                std::process::exit(1);
+            };
+
+            (p.id, range_to_bytes(p.power - 1), range_to_bytes(p.power), p.address.clone(), pubkey)
         } else {
             let start = hex_to_32(&args.start_range.as_ref()
                 .unwrap_or_else(|| { eprintln!("[ERROR] --start-range required when --puzzle not set"); std::process::exit(1); }));
@@ -108,8 +114,16 @@ fn main() {
                 .unwrap_or_else(|| { eprintln!("[ERROR] --end-range required when --puzzle not set"); std::process::exit(1); }));
             let addr = args.address.as_ref()
                 .unwrap_or_else(|| { eprintln!("[ERROR] --address required when --puzzle not set"); std::process::exit(1); });
-            (0, start, end, addr.clone())
+            let pubkey = args.pubkey.as_ref()
+                .map(|pk| hex_to_pubkey(pk))
+                .unwrap_or_else(|| { eprintln!("[ERROR] --pubkey required when --puzzle not set or no embedded pubkey"); std::process::exit(1); });
+            (0, start, end, addr.clone(), pubkey)
         };
+
+    let num_threads = args.threads.unwrap_or_else(|| {
+        let cores = num_cpus::get();
+        (cores / 2).max(1)
+    });
 
     let distinguished_bits = args.distinguished_bits.unwrap_or(20);
     let checkpoint_path = args.checkpoint.as_ref().map(|p| p.to_string_lossy().to_string());
