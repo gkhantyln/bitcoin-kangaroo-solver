@@ -206,7 +206,7 @@ cargo check
 
 - **Genel anahtar gerektirir** — Kangaroo algoritması yalnızca Bitcoin adresi ile çalışamaz. Bitcoin Puzzle yarışmasındaki çoğu puzzle yalnızca adres bilgisine sahiptir; sıkıştırılmış genel anahtarı harici kaynaklardan edinmeniz gerekir. Sadece #135, #140, #145, #150, #155, #160 numaralı puzzle'ların genel anahtarı bilinmektedir ve Kangaroo için uygundur.
 - **Kontrol noktasından devam takası** — önceki çalıştırmadaki eski distinguished noktaları çarpışma veritabanı olarak korunur, ancak tüm kangurular sıfırdan başlar (eski mesafeler çalıştırmalar arasında karşılaştırılamaz)
-- **WGPU + AMD: karmaşık gölgelendiricilerde sürücü çökmesi** — naga 0.20, WGSL çekirdeğinden geçerli SPIR-V üretir, ancak **AMD Vulkan sürücüsü 25.8.1**, gölgelendirici belirli bir karmaşıklık eşiğini aştığında `create_compute_pipeline`'da `STATUS_ACCESS_VIOLATION` hatası ile çöker. Geçici çözüm: çekirdek, birden çok dispatch çağrısına bölünüyor (ana döngü + affine dönüşümü), böylece her alt gölgelendirici sürücü sınırının altında kalır.
+- **WGPU + AMD: sürücü çökmesi** — WGSL kernel'in kendisi (`batch_invert` → per-thread `mod_inv` fix'i ile) sorunsuz derlenip dispatch ediliyor. Ancak **tüm solver pipeline** (çoklu storage buffer, bind group, dispatch loop) AMD RX 550'de hâlâ `STATUS_ACCESS_VIOLATION` ile çöküyor. Bu daha derin bir Vulkan sürücü problemi. Geçici çözüm: CPU solver tamamen çalışır durumda; GPU solver farklı bir AMD GPU veya gelecek sürücü güncellemesi gerektiriyor.
 - **Kullanım dışı: `naga-0.20.0-patch.md`** — önceki naga fonksiyon çağrısı argüman önbellekleme hatası, gölgelendirici kodunun sorunlu kalıplardan kaçınacak şekilde yeniden yapılandırılmasıyla çözülmüştür; yama dosyası yalnızca referans olarak saklanmaktadır.
 
 ## Lisans

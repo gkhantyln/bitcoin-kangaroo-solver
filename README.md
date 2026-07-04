@@ -206,7 +206,7 @@ cargo check
 
 - **Requires public key** — Kangaroo algorithm cannot work with Bitcoin address alone. Most Bitcoin Puzzle challenges are address-only; you must obtain the compressed public key from out-of-band sources. Only puzzles #135, #140, #145, #150, #155, #160 have known public keys and are suitable for Kangaroo.
 - **Checkpoint resume trade-off** — old distinguished points from previous run are kept as collision database, but all kangaroos start fresh (stale distances are incomparable across runs)
-- **WGPU on AMD: driver crash on complex shaders** — naga 0.20 produces valid SPIR-V from the WGSL kernel, but the **AMD Vulkan driver 25.8.1** crashes with `STATUS_ACCESS_VIOLATION` at `create_compute_pipeline` when the shader exceeds a complexity threshold. Workaround: the kernel is being split into multiple dispatch calls (main loop + affine conversion) so each sub-shader stays within the driver's limit.
+- **WGPU on AMD: driver crash on complex shaders** — the kernel itself (WGSL) compiles and dispatches correctly after the `batch_invert` → per-thread `mod_inv` fix. However, the **full solver pipeline** (multiple storage buffers, bind groups, dispatch loop) still crashes with `STATUS_ACCESS_VIOLATION` on the AMD RX 550 (Vulkan driver). This is a deeper driver-level issue. Workaround: CPU solver is fully functional; GPU solver requires a different AMD GPU or a future driver update.
 - **Deprecated: `naga-0.20.0-patch.md`** — the earlier naga function-call argument caching bug has been resolved by restructuring shader code to avoid problematic patterns; the patch file is retained for reference only.
 
 ## License

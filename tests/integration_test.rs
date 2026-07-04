@@ -2202,7 +2202,7 @@ fn main(@builtin(local_invocation_id) lid: vec3<u32>, @builtin(global_invocation
 
 #[cfg(feature = "gpu-wgpu")]
 #[test]
-#[ignore = "requires GPU - run manually to verify E2E correctness"]
+#[ignore = "AMD driver crash in full solver pipeline (STATUS_ACCESS_VIOLATION) — kernel alone works (V13), but multi-buffer solver setup triggers crash"]
 fn test_wgpu_solver_small_range() {
     use bitcoin_kangaroo_solver::kangaroo::point;
     use rand::Rng;
