@@ -212,3 +212,7 @@ cargo check
 ## License
 
 MIT
+
+---
+
+**Developer:** [gkhantyln](https://github.com/gkhantyln) — Bitcoin Kangaroo Solver
