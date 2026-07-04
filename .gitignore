@@ -18,6 +18,11 @@ checkpoints/
 
 # IDE
 .vscode/
+
+# Internal docs (not needed by end users)
+AGENTS.md
+PLAN.md
+naga-0.20.0-patch.md
 .idea/
 *.swp
 *.swo
